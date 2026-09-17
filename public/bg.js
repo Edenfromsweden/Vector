@@ -45,8 +45,8 @@
 				a2: 0.02 + Math.random() * 0.03, // wave amplitude 2
 				f1: (0.6 + Math.random() * 0.5) / (100 * DPR),
 				f2: (1.4 + Math.random() * 0.8) / (100 * DPR),
-				s1: 0.00016 + Math.random() * 0.00016,
-				s2: 0.00022 + Math.random() * 0.0002,
+				s1: 0.00055 + Math.random() * 0.00035,
+				s2: 0.0007 + Math.random() * 0.0004,
 				p: Math.random() * Math.PI * 2,
 				alpha: 0.16 + Math.random() * 0.1,
 			});
@@ -54,14 +54,15 @@
 
 		// Glowing drifting particles (interactive).
 		const count = Math.max(
-			22,
-			Math.min(46, Math.round((innerWidth * innerHeight) / 34000))
+			28,
+			Math.min(60, Math.round((innerWidth * innerHeight) / 26000))
 		);
 		parts = [];
 		for (let i = 0; i < count; i++) {
 			const c = AUR[(Math.random() * AUR.length) | 0];
-			const bvx = (Math.random() - 0.5) * 0.14 * DPR;
-			const bvy = (Math.random() - 0.5) * 0.14 * DPR;
+			// Coherent flow across the screen (rightward), varying speeds.
+			const bvx = (0.5 + Math.random() * 0.7) * DPR;
+			const bvy = (Math.random() - 0.5) * 0.25 * DPR;
 			parts.push({
 				x: Math.random() * W,
 				y: Math.random() * H,
@@ -86,7 +87,7 @@
 		for (let x = 0; x <= W + step; x += step) {
 			const y =
 				yBase +
-				Math.sin(x * rb.f1 + t * rb.s1 + rb.p) * amp1 +
+				Math.sin(x * rb.f1 - t * rb.s1 + rb.p) * amp1 +
 				Math.sin(x * rb.f2 - t * rb.s2) * amp2;
 			if (x === 0) ctx.moveTo(0, y);
 			else ctx.lineTo(x, y);
@@ -95,7 +96,7 @@
 			const y =
 				yBase +
 				th +
-				Math.sin(x * rb.f1 + t * rb.s1 + rb.p) * amp1 * 0.7 +
+				Math.sin(x * rb.f1 - t * rb.s1 + rb.p) * amp1 * 0.7 +
 				Math.sin(x * rb.f2 - t * rb.s2) * amp2 * 0.7;
 			ctx.lineTo(x, y);
 		}
@@ -124,7 +125,7 @@
 		ctx.filter = "none";
 
 		// Interactive glowing particles.
-		const R = 150 * DPR;
+		const R = 230 * DPR;
 		for (const p of parts) {
 			if (pointer.active) {
 				const dx = p.x - pointer.x,
@@ -132,14 +133,16 @@
 				const d2 = dx * dx + dy * dy;
 				if (d2 < R * R) {
 					const d = Math.sqrt(d2) || 1;
-					const force = (1 - d / R) * 1.1;
-					p.vx += (dx / d) * force;
-					p.vy += (dy / d) * force;
+					const f = 1 - d / R;
+					const push = f * 2.4; // radial repulsion
+					const swirl = f * 1.1; // tangential wake
+					p.vx += (dx / d) * push - (dy / d) * swirl;
+					p.vy += (dy / d) * push + (dx / d) * swirl;
 				}
 			}
-			// ease back toward gentle base drift
-			p.vx = p.vx * 0.93 + p.bvx * 0.07;
-			p.vy = p.vy * 0.93 + p.bvy * 0.07;
+			// ease back toward the flow
+			p.vx = p.vx * 0.92 + p.bvx * 0.08;
+			p.vy = p.vy * 0.92 + p.bvy * 0.08;
 			p.x += p.vx;
 			p.y += p.vy;
 			if (p.x < -20) p.x = W + 20;
