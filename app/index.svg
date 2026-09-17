@@ -39,6 +39,7 @@
 				<script src="search.js" defer="defer"></script>
 				<script src="app.js" defer="defer"></script>
 				<script src="bg.js" defer="defer"></script>
+				<script src="games.js" defer="defer"></script>
 			</head>
 
 			<body>
@@ -74,11 +75,41 @@
 						<kbd class="enter-hint">&#8629;</kbd>
 					</form>
 
+					<button type="button" id="open-games" class="games-btn">
+						<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+							<rect x="3" y="6" width="18" height="12" rx="4" fill="none" stroke="currentColor" stroke-width="1.8" />
+							<line x1="7" y1="12" x2="10" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+							<line x1="8.5" y1="10.5" x2="8.5" y2="13.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+							<circle cx="15.5" cy="11" r="1.2" fill="currentColor" />
+							<circle cx="17.5" cy="13" r="1.2" fill="currentColor" />
+						</svg>
+						Games
+					</button>
+
 					<div class="status">
 						<p id="sj-error"></p>
 						<pre id="sj-error-code"></pre>
 					</div>
 				</main>
+
+				<div id="games" class="panel" aria-hidden="true">
+					<div class="panel-head">
+						<h2>Games</h2>
+						<button class="vbtn" id="games-close" title="Close">&#215;</button>
+					</div>
+					<div id="games-grid" class="games-grid"></div>
+					<p id="games-empty" class="games-empty" hidden="hidden">No games yet.</p>
+				</div>
+
+				<div id="game-view" aria-hidden="true">
+					<div class="gv-bar">
+						<button class="vbtn" id="gv-back" title="Back">&#8249;</button>
+						<span id="gv-title" class="gv-title"></span>
+						<button class="vbtn" id="gv-fav" title="Favorite">&#9734;</button>
+						<a class="vbtn" id="gv-dl" title="Download HTML" download="download">&#10515;</a>
+					</div>
+					<iframe id="gv-frame" title="Game"></iframe>
+				</div>
 			</body>
 		</html>
 	</foreignObject>
