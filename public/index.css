@@ -57,34 +57,13 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
-/* Soft drifting aurora behind the content */
-.aurora {
+/* Animated aurora canvas behind the content (drawn by bg.js) */
+#bg {
 	position: fixed;
-	inset: -20vmax;
+	inset: 0;
 	z-index: -1;
-	background:
-		radial-gradient(
-			38vmax 38vmax at 20% 30%,
-			rgba(139, 92, 246, 0.16),
-			transparent 60%
-		),
-		radial-gradient(
-			34vmax 34vmax at 80% 70%,
-			rgba(100, 149, 237, 0.16),
-			transparent 60%
-		);
-	filter: blur(10px);
-	animation: drift 26s ease-in-out infinite alternate;
+	display: block;
 	pointer-events: none;
-}
-
-@keyframes drift {
-	0% {
-		transform: translate3d(-3%, -2%, 0) scale(1);
-	}
-	100% {
-		transform: translate3d(3%, 2%, 0) scale(1.08);
-	}
 }
 
 .hero {
@@ -526,7 +505,7 @@ footer a:hover {
 
 body.proxying .hero,
 body.proxying > footer,
-body.proxying .aurora {
+body.proxying #bg {
 	display: none;
 }
 
@@ -738,7 +717,6 @@ body.proxying .aurora {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.aurora,
 	.mark,
 	.pulse {
 		animation: none;

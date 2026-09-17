@@ -32,7 +32,14 @@ cpSync(publicDir, dist, { recursive: true });
 // redeploy is never shadowed by a browser's cached index.css / index.js.
 const build = Date.now().toString(36);
 let html = readFileSync(`${dist}/index.html`, "utf8");
-for (const asset of ["index.css", "index.js", "wisp-config.js", "games.js"]) {
+for (const asset of [
+	"index.css",
+	"index.js",
+	"wisp-config.js",
+	"games.js",
+	"search.js",
+	"bg.js",
+]) {
 	html = html
 		.replace(`href="${asset}"`, `href="${asset}?v=${build}"`)
 		.replace(`src="${asset}"`, `src="${asset}?v=${build}"`);
