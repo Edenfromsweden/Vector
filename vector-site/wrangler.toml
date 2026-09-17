@@ -1,0 +1,11 @@
+name = "vector-site"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+account_id = "a2f2f2d84abce47bdc065c0f8048f025"
+
+# Fresh, unblocked hostname on the user's own domain (auto-creates DNS).
+routes = [{ pattern = "v.zilkcz.com", custom_domain = true }]
+
+# Serve the built static site (dist/) and let the worker wrap every response
+# with the cross-origin-isolation headers the proxy needs.
+assets = { directory = "../dist", binding = "ASSETS", run_worker_first = true }
