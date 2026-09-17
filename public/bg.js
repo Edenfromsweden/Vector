@@ -45,8 +45,8 @@
 				a2: 0.02 + Math.random() * 0.03, // wave amplitude 2
 				f1: (0.6 + Math.random() * 0.5) / (100 * DPR),
 				f2: (1.4 + Math.random() * 0.8) / (100 * DPR),
-				s1: 0.00055 + Math.random() * 0.00035,
-				s2: 0.0007 + Math.random() * 0.0004,
+				s1: 0.0024 + Math.random() * 0.0014,
+				s2: 0.003 + Math.random() * 0.0016,
 				p: Math.random() * Math.PI * 2,
 				alpha: 0.16 + Math.random() * 0.1,
 			});
@@ -60,19 +60,23 @@
 		parts = [];
 		for (let i = 0; i < count; i++) {
 			const c = AUR[(Math.random() * AUR.length) | 0];
-			// Coherent flow across the screen (rightward), varying speeds.
-			const bvx = (0.5 + Math.random() * 0.7) * DPR;
-			const bvy = (Math.random() - 0.5) * 0.25 * DPR;
+			// Fast coherent flow across the screen (rightward), varying speeds.
+			const bvx = (2.6 + Math.random() * 2.8) * DPR;
+			const bvy = (Math.random() - 0.5) * 0.6 * DPR;
+			const x0 = Math.random() * W,
+				y0 = Math.random() * H;
 			parts.push({
-				x: Math.random() * W,
-				y: Math.random() * H,
+				x: x0,
+				y: y0,
+				px: x0,
+				py: y0,
 				vx: bvx,
 				vy: bvy,
 				bvx,
 				bvy,
-				r: (1.5 + Math.random() * 3) * DPR,
+				r: (2 + Math.random() * 3.5) * DPR,
 				c,
-				a: 0.4 + Math.random() * 0.45,
+				a: 0.5 + Math.random() * 0.4,
 			});
 		}
 	}
@@ -120,12 +124,13 @@
 
 		// Aurora curtains — softened + additive for a glowing light feel.
 		ctx.globalCompositeOperation = "lighter";
-		ctx.filter = `blur(${14 * DPR}px)`;
+		ctx.filter = `blur(${10 * DPR}px)`;
 		for (const rb of ribbons) drawRibbon(rb, t);
 		ctx.filter = "none";
 
 		// Interactive glowing particles.
-		const R = 230 * DPR;
+		const R = 240 * DPR;
+		ctx.lineCap = "round";
 		for (const p of parts) {
 			if (pointer.active) {
 				const dx = p.x - pointer.x,
@@ -134,8 +139,8 @@
 				if (d2 < R * R) {
 					const d = Math.sqrt(d2) || 1;
 					const f = 1 - d / R;
-					const push = f * 2.4; // radial repulsion
-					const swirl = f * 1.1; // tangential wake
+					const push = f * 3.4; // radial repulsion
+					const swirl = f * 1.6; // tangential wake
 					p.vx += (dx / d) * push - (dy / d) * swirl;
 					p.vy += (dy / d) * push + (dx / d) * swirl;
 				}
@@ -143,15 +148,29 @@
 			// ease back toward the flow
 			p.vx = p.vx * 0.92 + p.bvx * 0.08;
 			p.vy = p.vy * 0.92 + p.bvy * 0.08;
+
+			const ox = p.x,
+				oy = p.y;
 			p.x += p.vx;
 			p.y += p.vy;
-			if (p.x < -20) p.x = W + 20;
-			else if (p.x > W + 20) p.x = -20;
-			if (p.y < -20) p.y = H + 20;
-			else if (p.y > H + 20) p.y = -20;
+			let wrapped = false;
+			if (p.x < -30) ((p.x = W + 30), (wrapped = true));
+			else if (p.x > W + 30) ((p.x = -30), (wrapped = true));
+			if (p.y < -30) ((p.y = H + 30), (wrapped = true));
+			else if (p.y > H + 30) ((p.y = -30), (wrapped = true));
 
-			const glow = p.r * 5;
 			const [r, g, b] = p.c;
+			// motion streak (trail) — makes the flow clearly visible
+			if (!wrapped) {
+				ctx.strokeStyle = `rgba(${r},${g},${b},${p.a * 0.55})`;
+				ctx.lineWidth = p.r * 1.5;
+				ctx.beginPath();
+				ctx.moveTo(ox, oy);
+				ctx.lineTo(p.x, p.y);
+				ctx.stroke();
+			}
+			// glowing head
+			const glow = p.r * 4;
 			const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glow);
 			grad.addColorStop(0, `rgba(${r},${g},${b},${p.a})`);
 			grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
