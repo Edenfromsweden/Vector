@@ -1,5 +1,7 @@
 // Scans a folder of game .html files and returns a manifest.
-// A game's display name comes from its <title>, else its prettified filename.
+// - name: derived from the filename (reliable, unlike saved-page <title> tags).
+// - icon: the game's favicon, resolved against its <base href> when present, so
+//   each card can show the game's own icon instead of text.
 import { readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -8,13 +10,25 @@ export function scanGames(gamesDir) {
 	return readdirSync(gamesDir)
 		.filter((f) => /\.html?$/i.test(f))
 		.map((f) => {
+			const id = f.replace(/\.html?$/i, "");
+			const name = id.replace(/[_-]+/g, " ").trim();
 			const html = readFileSync(`${gamesDir}/${f}`, "utf8");
-			const title = (html.match(/<title>([^<]*)<\/title>/i) || [])[1];
-			const base = f.replace(/\.html?$/i, "");
-			const name =
-				(title && title.trim()) ||
-				base.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-			return { id: base, name, file: `games/${f}` };
+			const baseHref = (html.match(/<base[^>]*href="([^"]+)"/i) || [])[1];
+			const iconHref =
+				(html.match(
+					/<link[^>]*rel="[^"]*icon[^"]*"[^>]*href="([^"]+)"/i
+				) || [])[1] ||
+				(html.match(
+					/<link[^>]*href="([^"]+)"[^>]*rel="[^"]*icon[^"]*"/i
+				) || [])[1];
+			let icon = null;
+			try {
+				if (baseHref) icon = new URL(iconHref || "favicon.png", baseHref).href;
+				else if (iconHref && /^https?:/i.test(iconHref)) icon = iconHref;
+			} catch {
+				/* leave icon null */
+			}
+			return { id, name, file: `games/${f}`, icon };
 		})
 		.sort((a, b) => a.name.localeCompare(b.name));
 }

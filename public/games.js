@@ -77,9 +77,30 @@
 			const play = document.createElement("button");
 			play.className = "game-play";
 			play.title = "Play " + g.name;
-			play.innerHTML =
-				'<span class="game-ico">▶</span><span class="game-name"></span>';
-			play.querySelector(".game-name").textContent = g.name;
+
+			const cover = document.createElement("span");
+			cover.className = "game-cover";
+			if (g.icon) {
+				const img = document.createElement("img");
+				img.className = "game-cover-img";
+				img.loading = "lazy";
+				img.alt = "";
+				img.referrerPolicy = "no-referrer";
+				img.src = g.icon;
+				img.addEventListener("error", () => {
+					cover.classList.add("noimg");
+					img.remove();
+				});
+				cover.appendChild(img);
+			} else {
+				cover.classList.add("noimg");
+			}
+
+			const nameEl = document.createElement("span");
+			nameEl.className = "game-name";
+			nameEl.textContent = g.name;
+
+			play.append(cover, nameEl);
 			play.addEventListener("click", () => openGame(g));
 
 			const actions = document.createElement("div");
