@@ -7,9 +7,6 @@
 	const canvas = document.getElementById("bg");
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
-	const reduce =
-		window.matchMedia &&
-		window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 	let W, H, DPR, ribbons, parts, raf, running = true;
 	const pointer = { x: 0, y: 0, active: false };
@@ -181,7 +178,7 @@
 		}
 		ctx.globalCompositeOperation = "source-over";
 
-		if (running && !reduce) raf = requestAnimationFrame(frame);
+		if (running) raf = requestAnimationFrame(frame);
 	}
 
 	function start() {
@@ -193,7 +190,6 @@
 	window.addEventListener("resize", () => {
 		resize();
 		build();
-		if (reduce) frame(0);
 	});
 
 	window.addEventListener(
@@ -210,7 +206,7 @@
 
 	document.addEventListener("visibilitychange", () => {
 		running = !document.hidden;
-		if (running && !reduce) {
+		if (running) {
 			cancelAnimationFrame(raf);
 			raf = requestAnimationFrame(frame);
 		} else {
