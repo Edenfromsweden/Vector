@@ -1,0 +1,60 @@
+name = "wisp-worker"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Expose the Wisp endpoint on a custom domain (same account as the zilkcz.com
+# zone) so the WebSocket isn't on a blockable *.workers.dev hostname.
+account_id = "a2f2f2d84abce47bdc065c0f8048f025"
+routes = [{ pattern = "wisp.zilkcz.com", custom_domain = true }]
+workers_dev = true
+
+# Serve the landing page from the assets/ directory (env.ASSETS.fetch()).
+# run_worker_first keeps WebSocket upgrade requests (e.g. /) routed to the
+# worker instead of being served directly from the asset store.
+assets = { directory = "./assets", binding = "ASSETS", run_worker_first = true }
+
+# The rate limiter keeps its per-ip counters in a Durable Object, so the
+# fixed window is shared across the whole fleet instead of being per-isolate.
+# Enable it by uncommenting the rate-limit vars below; every isolate routes
+# its counter operations to the single "global" instance of GlobalRateLimiter.
+[durable_objects]
+bindings = [{ name = "GLOBAL_RATELIMITER", class_name = "GlobalRateLimiter" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GlobalRateLimiter"]
+
+# Optional environment variables for the worker.
+#
+#   RATELIMIT_ENABLED       "true" to enable the fixed-window rate limiter.
+#   RATELIMIT_CONNECTIONS   max new streams per ip per window (default 30).
+#   RATELIMIT_WINDOW        window length in seconds (default 60).
+#   BANDWIDTH_LIMIT         per-ip relayed-byte budget per window (default 26214400).
+#   WISP_COALESCE_MAX       tcp->ws batch cap in bytes before a DATA packet is
+#                           flushed (default 65536).
+#   WISP_COALESCE_TIMEOUT   ms to hold small tcp chunks for batching (default
+#                           10; 0 sends every chunk as its own packet).
+#   STREAM_LIMIT_TOTAL      max concurrent streams per websocket (default 50).
+#   ALLOW_LOOPBACK          "true" to allow connections to loopback ips.
+#   ALLOW_PRIVATE           "true" to allow connections to private ips.
+#   HOSTNAME_BLACKLIST      comma-separated hostnames to block (matches the
+#                           host and its subdomains), e.g. "internal.corp".
+#   PORT_BLACKLIST          comma-separated ports to block, e.g. "25,22".
+#   WISP_MOTD               wisp v2 MOTD shown to clients during the handshake.
+#   WISP_AUTH_USERNAME      wisp v2 password-auth username (enables auth).
+#   WISP_AUTH_PASSWORD      wisp v2 password-auth password (enables auth).
+#
+# [vars]
+# RATELIMIT_ENABLED = "true"
+# RATELIMIT_CONNECTIONS = "30"
+# RATELIMIT_WINDOW = "60"
+# STREAM_LIMIT_TOTAL = "50"
+# ALLOW_LOOPBACK = "false"
+# ALLOW_PRIVATE = "false"
+# HOSTNAME_BLACKLIST = "internal.corp"
+# PORT_BLACKLIST = "25,22"
+# WISP_MOTD = "Welcome to my wisp proxy!"
+#
+# [secrets]
+# WISP_AUTH_USERNAME = "alice"
+# WISP_AUTH_PASSWORD = "hunter2"

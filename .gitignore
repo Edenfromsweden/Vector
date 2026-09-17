@@ -1,3 +1,11 @@
 node_modules
 .DS_Store
 scramjet/
+# build output / worker deps
+dist/
+cf-worker/node_modules/
+.tools/
+
+# wrangler local state
+cf-worker/.wrangler/
+cf-worker/dist-worker/

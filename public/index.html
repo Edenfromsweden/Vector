@@ -1,66 +1,218 @@
 <!doctype html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
 		<meta
 			name="viewport"
 			content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
 		/>
-		<title>Scramjet</title>
+		<title>Vector</title>
+		<meta name="theme-color" content="#100a24" />
 
-		<link rel="shortcut icon" content="favicon.webp" />
-	
+		<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
 		<script src="/scram/scramjet.all.js"></script>
 		<script src="/baremux/index.js"></script>
-		
+
 		<link rel="stylesheet" href="index.css" />
+		<script src="wisp-config.js" defer></script>
 		<script src="register-sw.js" defer></script>
 		<script src="search.js" defer></script>
 		<script src="index.js" defer></script>
+		<script src="games.js" defer></script>
 	</head>
 
 	<body>
-		<div title="Scramjet Logo" class="flex-center logo-wrapper header-center">
-			<img class="logo" src="sj.png" alt="Scramjet" />
-			<h1>Scramjet | MW</h1>
-		</div>
-		<div class="flex-center desc left-margin">
-			<p>
-				Scramjet is an experimental interception based web proxy designed to
-				evade internet censorship, bypass arbitrary web browser restrictions and
-				innovate web proxy technologies.
+		<div class="aurora" aria-hidden="true"></div>
+
+		<main class="hero">
+			<div class="mark" title="Vector">
+				<svg viewBox="0 0 96 96" width="72" height="72" aria-hidden="true">
+					<defs>
+						<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+							<stop offset="0" stop-color="#a78bfa" />
+							<stop offset="1" stop-color="#6495ed" />
+						</linearGradient>
+					</defs>
+					<rect x="6" y="6" width="84" height="84" rx="24" fill="url(#g)" />
+					<g
+						stroke="#ffffff"
+						stroke-width="10"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						fill="none"
+					>
+						<line x1="32" y1="64" x2="64" y2="32" />
+						<polyline points="44,32 64,32 64,52" />
+					</g>
+				</svg>
+			</div>
+
+			<h1 class="wordmark">vector</h1>
+			<p class="tagline">A straight line to the open web.</p>
+
+			<form id="sj-form" class="search">
+				<input
+					id="sj-search-engine"
+					value="https://www.google.com/search?q=%s"
+					type="hidden"
+				/>
+				<svg
+					class="search-icon"
+					viewBox="0 0 24 24"
+					width="20"
+					height="20"
+					aria-hidden="true"
+				>
+					<circle
+						cx="11"
+						cy="11"
+						r="7"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+					/>
+					<line
+						x1="16.5"
+						y1="16.5"
+						x2="21"
+						y2="21"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+					/>
+				</svg>
+				<input
+					id="sj-address"
+					type="text"
+					placeholder="Search or enter a URL"
+					autocomplete="off"
+					autocapitalize="off"
+					spellcheck="false"
+				/>
+				<kbd class="enter-hint">↵</kbd>
+			</form>
+
+			<button type="button" id="open-games" class="games-btn">
+				<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+					<rect
+						x="3"
+						y="6"
+						width="18"
+						height="12"
+						rx="4"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="1.8"
+					/>
+					<line
+						x1="7"
+						y1="12"
+						x2="10"
+						y2="12"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+					/>
+					<line
+						x1="8.5"
+						y1="10.5"
+						x2="8.5"
+						y2="13.5"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+					/>
+					<circle cx="15.5" cy="11" r="1.2" fill="currentColor" />
+					<circle cx="17.5" cy="13" r="1.2" fill="currentColor" />
+				</svg>
+				Games
+			</button>
+
+			<div class="status">
+				<p id="sj-error"></p>
+				<pre id="sj-error-code"></pre>
+			</div>
+		</main>
+
+		<footer>
+			<span class="pulse" aria-hidden="true"></span>
+			<span class="muted">running on your own Cloudflare edge</span>
+			<a href="credits.html">credits</a>
+		</footer>
+
+		<!-- Games panel -->
+		<div id="games" class="panel" aria-hidden="true">
+			<div class="panel-head">
+				<h2>Games</h2>
+				<button class="vbtn" id="games-close" title="Close">&times;</button>
+			</div>
+			<div id="games-grid" class="games-grid"></div>
+			<p id="games-empty" class="games-empty" hidden>
+				No games yet. Drop <code>.html</code> files into
+				<code>public/games/</code> and redeploy — they'll show up here
+				automatically.
 			</p>
 		</div>
 
-		<form id="sj-form" class="flex-center">
-			<input
-				id="sj-search-engine"
-				value="https://www.google.com/search?q=%s"
-				type="hidden"
-			/>
-			<input id="sj-address" type="text" placeholder="Search the web freely" />
-		</form>
-		<div class="desc left-margin">
-			<p id="sj-error"></p>
-			<pre id="sj-error-code"></pre>
+		<!-- Fullscreen game player -->
+		<div id="game-view" aria-hidden="true">
+			<div class="gv-bar">
+				<button class="vbtn" id="gv-back" title="Back">&lsaquo;</button>
+				<span id="gv-title" class="gv-title"></span>
+				<button class="vbtn" id="gv-fav" title="Favorite">&#9734;</button>
+				<a class="vbtn" id="gv-dl" title="Download HTML" download>&#10515;</a>
+			</div>
+			<iframe id="gv-frame" title="Game"></iframe>
 		</div>
-		<footer>
-			<div>
-				<a
-					title="The Mercury Workshop GitHub organization"
-					href="https://github.com/MercuryWorkshop"
-					>Mercury Workshop</a
-				>
-				<a
-					title="The example demo app for Scramjet"
-					href="https://github.com/MercuryWorkshop/Scramjet-Demo"
-					>GitHub</a
-				>
-				<a title="License information" href="credits.html">Credits</a>
+
+		<!-- In-proxy browser shell: shown once you open a page -->
+		<div id="vbar" aria-hidden="true">
+			<div class="vrow vrow-tabs">
+				<span class="vbrand" title="Vector" aria-hidden="true">
+					<svg viewBox="0 0 96 96" width="22" height="22">
+						<defs>
+							<linearGradient id="gb" x1="0" y1="0" x2="1" y2="1">
+								<stop offset="0" stop-color="#a78bfa" />
+								<stop offset="1" stop-color="#6495ed" />
+							</linearGradient>
+						</defs>
+						<rect x="6" y="6" width="84" height="84" rx="26" fill="url(#gb)" />
+						<g
+							stroke="#fff"
+							stroke-width="11"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							fill="none"
+						>
+							<line x1="32" y1="64" x2="64" y2="32" />
+							<polyline points="44,32 64,32 64,52" />
+						</g>
+					</svg>
+				</span>
+				<div class="vtabs" id="vtabs"></div>
+				<button class="vbtn vnew" id="vnewtab" title="New tab">+</button>
 			</div>
-			<div>
-				<span>Scramjet &copy; MW 2025</span>
+			<div class="vrow vrow-tools">
+				<button class="vbtn" id="vback" title="Back" aria-label="Back">‹</button>
+				<button class="vbtn" id="vfwd" title="Forward" aria-label="Forward">
+					›
+				</button>
+				<button class="vbtn" id="vreload" title="Reload" aria-label="Reload">
+					⟳
+				</button>
+				<form class="vurl" id="vurlform">
+					<input
+						id="vurl"
+						type="text"
+						placeholder="Search or enter a URL"
+						autocomplete="off"
+						autocapitalize="off"
+						spellcheck="false"
+					/>
+				</form>
 			</div>
-		</footer>
+		</div>
+		<div id="vframes" aria-hidden="true"></div>
 	</body>
 </html>

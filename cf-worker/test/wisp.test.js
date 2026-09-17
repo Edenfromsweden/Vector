@@ -1,0 +1,1013 @@
+//unit tests for src/wisp.js (the protocol core).
+//
+//these run on plain node: the worker's cloudflare-only imports (net.js,
+//ratelimit.js) are redirected to ./stubs by imports-loader.mjs, so real TCP
+//sockets are replaced by an in-memory fake while the wisp protocol logic
+//itself is exercised unmodified.
+//
+//run with: npm test
+
+import { test } from "node:test"
+import assert from "node:assert/strict"
+
+import { WispConnection } from "../src/wisp.js"
+import { create_packet, array_from_uint, create_info_packet, serialize_extensions, bytes_to_str, queue_size } from "../src/util.js"
+import { config } from "./stubs/config.js"
+import { ratelimit } from "./stubs/ratelimit.js"
+import { TCPConnection } from "./stubs/net.js"
+
+//fake websocket that records everything sent to the client
+function makeWs() {
+  const handler = { msgs: [], closed: false }
+  return {
+    async send(bytes) {
+      handler.msgs.push(new Uint8Array(bytes))
+    },
+    close() {
+      handler.closed = true
+    },
+    accept: async () => {},
+    handler
+  }
+}
+
+//wrap raw bytes as a MessageEvent-like object
+function msg(bytes) {
+  return { type: "message", data: bytes }
+}
+
+//build a CONNECT packet: [type][stream_id u32 le][stream_type][port u16 le][hostname]
+function connectPacket(streamId, host, port, streamType = 0x01) {
+  const hostBuf = new TextEncoder().encode(host)
+  const p = new Uint8Array(5 + 3 + hostBuf.length)
+  p[0] = 0x01
+  p[1] = streamId & 0xff
+  p[2] = (streamId >> 8) & 0xff
+  p[3] = (streamId >> 16) & 0xff
+  p[4] = (streamId >> 24) & 0xff
+  p[5] = streamType
+  p[6] = port & 0xff
+  p[7] = (port >> 8) & 0xff
+  p.set(hostBuf, 8)
+  return p
+}
+
+//collect the active stream object for a given id
+function streamOf(wisp, id) {
+  return wisp.active_streams[id]
+}
+
+//build a wisp v2 client INFO packet advertising the given extension entries
+function clientInfoPacket(extensions) {
+  return create_info_packet(2, 0, serialize_extensions(extensions || []))
+}
+
+//extract the [{id, payload}] extension list from an INFO packet's payload
+function parseExtensions(bytes) {
+  const out = []
+  let i = 0
+  while (i < bytes.length) {
+    if (bytes.length - i < 5) break
+    const id = bytes[i]
+    const len = new DataView(bytes.buffer, bytes.byteOffset + i + 1, 4).getUint32(0, true)
+    out.push({ id, payload: bytes.subarray(i + 5, i + 5 + len) })
+    i += 5 + len
+  }
+  return out
+}
+
+//build the password auth client payload: [username_len u8][password_len u16 LE][username][password]
+function passwordAuthPayload(username, password) {
+  const u = new TextEncoder().encode(username)
+  const p = new TextEncoder().encode(password)
+  const out = new Uint8Array(3 + u.length + p.length)
+  out[0] = u.length
+  out[1] = p.length & 0xff
+  out[2] = (p.length >> 8) & 0xff
+  out.set(u, 3)
+  out.set(p, 3 + u.length)
+  return out
+}
+
+const encode = new TextEncoder().encode.bind(new TextEncoder())
+const decode = new TextDecoder().decode.bind(new TextDecoder())
+
+const tick = (ms = 10) => new Promise(r => setTimeout(r, ms))
+
+test("handshake sends one CONTINUE packet with queue_size", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  assert.equal(ws.handler.msgs.length, 1, "handshake emits exactly one packet")
+  const p = ws.handler.msgs[0]
+  assert.equal(p[0], 0x03, "packet type is CONTINUE")
+  assert.equal(p[1] | (p[2] << 8), 0, "stream_id is 0")
+  assert.deepEqual(Array.from(p.slice(5)), Array.from(array_from_uint(queue_size, 4)), `payload is queue_size=${queue_size}`)
+})
+
+test("stream connect + bidirectional data relay", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+  await tick()
+
+  const stream = streamOf(wisp, 1)
+  assert.ok(stream, "stream 1 created")
+  assert.equal(stream.conn.hostname, "example.com", "tcp hostname parsed")
+  assert.equal(stream.conn.port, 80, "tcp port parsed")
+
+  //remote bytes -> DATA packet to the client
+  stream.conn._push(new TextEncoder().encode("hello"))
+  await tick()
+  const data = ws.handler.msgs.find(m => m[0] === 0x02 && (m[1] | (m[2] << 8)) === 1)
+  assert.ok(data, "remote data produces a DATA packet")
+  assert.equal(new TextDecoder().decode(data.slice(5)), "hello", "DATA payload echoes remote bytes")
+
+  //client bytes -> remote socket
+  await wisp.handle_ws_message(msg(create_packet(0x02, 1, new TextEncoder().encode("ping"))))
+  await tick()
+  assert.ok(
+    stream.conn.sent.some(d => new TextDecoder().decode(d) === "ping"),
+    "client DATA delivered to the remote socket"
+  )
+})
+
+test("client-initiated close cleans up with no reply packet", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+  await tick()
+  const stream = streamOf(wisp, 1)
+
+  wisp.close_stream(1)
+  assert.equal(stream.conn.closed, true, "remote socket closed")
+  assert.equal(1 in wisp.active_streams, false, "stream removed")
+  //wisp v1: a client-initiated CLOSE gets no reply (only server-side
+  //termination sends a CLOSE packet)
+  const reply = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1)
+  assert.equal(reply, undefined, "no CLOSE reply to client close")
+})
+
+test("close packet from the client tears down the stream", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(3, "example.com", 80)))
+  await tick()
+  const stream = streamOf(wisp, 3)
+
+  await wisp.handle_ws_message(msg(create_packet(0x04, 3, new Uint8Array([0x00]))))
+  assert.equal(stream.conn.closed, true, "remote socket closed on CLOSE packet")
+  assert.equal(3 in wisp.active_streams, false, "stream removed after CLOSE packet")
+})
+
+test("UDP CONNECT is rejected with CLOSE 0x48 (blocked by policy)", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(9, "example.com", 80, 0x02)))
+  await tick()
+
+  const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 9)
+  assert.ok(closeMsg, "UDP CONNECT emits a CLOSE packet")
+  assert.equal(closeMsg[5], 0x48, "close reason is HOST_BLOCKED")
+  assert.equal(9 in wisp.active_streams, false, "stream cleaned up")
+})
+
+test("failed TCP connect shows CLOSE 0x42", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  const orig = TCPConnection.prototype.connect
+  TCPConnection.prototype.connect = async function () {
+    throw new Error("connection refused")
+  }
+  try {
+    await wisp.handle_ws_message(msg(connectPacket(8, "example.com", 81)))
+    await tick()
+  } finally {
+    TCPConnection.prototype.connect = orig
+  }
+
+  const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 8)
+  assert.ok(closeMsg, "failed connect emits a CLOSE packet")
+  assert.equal(closeMsg[5], 0x42, "close reason is CONNECT_FAILED")
+  assert.equal(8 in wisp.active_streams, false, "stream cleaned up")
+})
+
+test("TCP read error triggers CLOSE 0x03", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(2, "example.com", 81)))
+  await tick()
+  const stream = streamOf(wisp, 2)
+
+  stream.conn.fail(new Error("connection reset"))
+  await tick(20)
+
+  const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 2)
+  assert.ok(closeMsg, "socket error emits a CLOSE packet")
+  assert.equal(closeMsg[5], 0x03, "close reason is SOCKET_ERROR")
+  assert.equal(2 in wisp.active_streams, false, "stream cleaned up")
+})
+
+test("TCP EOF triggers CLOSE 0x02", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(6, "example.com", 80)))
+  await tick()
+  streamOf(wisp, 6).conn.eof()
+  await tick(20)
+
+  const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 6)
+  assert.ok(closeMsg, "EOF emits a CLOSE packet")
+  assert.equal(closeMsg[5], 0x02, "close reason is NORMAL on EOF")
+})
+
+test("data to unknown or closed streams is ignored", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+  await tick()
+
+  const before = ws.handler.msgs.length
+  await wisp.handle_ws_message(msg(create_packet(0x02, 99, new TextEncoder().encode("x"))))
+  await tick()
+  assert.equal(ws.handler.msgs.length, before, "DATA to unknown stream is ignored")
+
+  wisp.close_stream(1)
+  const before2 = ws.handler.msgs.length
+  await wisp.handle_ws_message(msg(create_packet(0x02, 1, new TextEncoder().encode("x"))))
+  await tick()
+  assert.equal(ws.handler.msgs.length, before2, "DATA to closed stream is ignored")
+})
+
+test("malformed packets never crash the connection", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  const before = ws.handler.msgs.length
+  await wisp.handle_ws_message(msg(new Uint8Array([0x02, 0x01, 0x00]))) //too short
+  await wisp.handle_ws_message({ type: "message", data: "text frame" }) //non-binary
+  await wisp.handle_ws_message("garbage")
+  await tick()
+  assert.ok(ws.handler.msgs.length >= before, "malformed packets handled without crash")
+})
+
+test("backpressure caps the send queue at queue_size without losing data", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(7, "example.com", 80)))
+  await tick()
+  const stream = streamOf(wisp, 7)
+  stream.conn._sendDelay = 2 //remote is slow; the pump cannot drain fast
+
+  const payload = new Uint8Array(100).fill(0x41)
+  const TOTAL = queue_size + 40
+  for (let i = 0; i < TOTAL; i++) {
+    wisp.queue_ws_data(7, payload) //not awaited: producer outruns the pump
+  }
+
+  const queueLen = () => streamOf(wisp, 7).queue.length
+  let max = 0
+  for (let i = 0; i < 8; i++) {
+    max = Math.max(max, queueLen())
+    await tick(5)
+  }
+  assert.ok(max <= queue_size, `queue never exceeds queue_size (max=${max})`)
+  assert.ok(max > queue_size / 2, `backpressure actually engaged (max=${max} > ${queue_size / 2})`)
+
+  const deadline = Date.now() + 8000
+  while (stream.conn.sent.length < TOTAL && Date.now() < deadline) {
+    await tick(20)
+  }
+  assert.equal(stream.conn.sent.length, TOTAL, "all packets eventually delivered without loss")
+})
+
+test("close_stream wakes blocked queue_ws_data waiters", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(7, "example.com", 80)))
+  await tick()
+  const stream = streamOf(wisp, 7)
+  stream.conn._sendDelay = 1000 //pump basically stalls
+
+  //fill the queue past the cap; the push fires without awaiting so it will
+  //block on a waiter exactly like a message delivery would
+  const payload = new Uint8Array(10)
+  for (let i = 0; i < queue_size + 20; i++) wisp.queue_ws_data(7, payload)
+  await tick()
+
+  //closing the stream must resolve all pending waiters instead of leaking promises
+  const waitersBefore = streamOf(wisp, 7).waiters.length
+  assert.ok(waitersBefore > 0, "some queue_ws_data calls are blocked")
+  wisp.close_stream(7)
+  assert.equal(7 in wisp.active_streams, false, "stream removed")
+})
+
+test("ws disconnect closes every stream cleanly", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(4, "example.com", 80)))
+  await wisp.handle_ws_message(msg(connectPacket(5, "example.com", 80)))
+  await tick()
+
+  wisp.close_all()
+  assert.equal(Object.keys(wisp.active_streams).length, 0, "all streams closed on ws disconnect")
+  const s4 = ws.handler.msgs.find(m => (m[1] | (m[2] << 8)) === 4)
+  const s5 = ws.handler.msgs.find(m => (m[1] | (m[2] << 8)) === 5)
+  assert.equal(s4, undefined, "no stray CLOSE for stream 4")
+  assert.equal(s5, undefined, "no stray CLOSE for stream 5")
+})
+
+test("CONTINUE packets are emitted for flow control", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(connectPacket(10, "example.com", 80)))
+  await tick()
+  const stream = streamOf(wisp, 10)
+
+  //send enough packets to cross the queue_size/4 threshold
+  const payload = new Uint8Array(10)
+  for (let i = 0; i < queue_size / 2 + 20; i++) {
+    await wisp.queue_ws_data(10, payload)
+    await tick(0)
+  }
+  await tick()
+
+  const continues = ws.handler.msgs.filter(m => m[0] === 0x03 && (m[1] | (m[2] << 8)) === 10)
+  assert.ok(continues.length >= 1, "CONTINUE packet(s) sent after queue_size/4 queued packets")
+})
+
+test("wisp v2 handshake: INFO first, CONTINUE only after the client's INFO", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1", 2)
+  wisp.setup()
+
+  //the opening packet must be INFO (stream 0), not CONTINUE
+  assert.equal(ws.handler.msgs.length, 1, "exactly one packet on setup")
+  const info = ws.handler.msgs[0]
+  assert.equal(info[0], 0x05, "first packet type is INFO")
+  assert.equal(info[1] | (info[2] << 8), 0, "INFO is on stream 0")
+  assert.equal(info[5], 2, "major version is 2")
+  assert.equal(info[6], 0, "minor version is 0")
+  const extensions = parseExtensions(info.subarray(7))
+  assert.deepEqual(extensions.map(e => e.id), [0x05], "server advertises stream open confirmation")
+
+  //no CONTINUE(0) until the client replies with its INFO
+  assert.equal(wisp.handshake_done, false, "handshake not done yet")
+  await wisp.handle_ws_message(msg(clientInfoPacket([{ id: 0x05, payload: new Uint8Array(0) }])))
+  assert.equal(wisp.handshake_done, true, "handshake completes after client INFO")
+  assert.equal(wisp.client_exts[0x05] !== undefined, true, "stream open confirmation negotiated")
+
+  const cont = ws.handler.msgs.find(m => m[0] === 0x03 && (m[1] | (m[2] << 8)) === 0)
+  assert.ok(cont, "CONTINUE(0) sent after the handshake")
+  assert.deepEqual(Array.from(cont.slice(5)), Array.from(array_from_uint(queue_size, 4)), "buffer size is queue_size")
+})
+
+test("wisp v2 handshake: version mismatch is rejected with CLOSE 0x04", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1", 2)
+  wisp.setup()
+
+  await wisp.handle_ws_message(msg(create_info_packet(3, 0, serialize_extensions([]))))
+  const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 0)
+  assert.ok(closeMsg, "CLOSE(0) emitted")
+  assert.equal(closeMsg[5], 0x04, "reason is INCOMPATIBLE_EXTENSIONS")
+  assert.equal(ws.handler.closed, true, "websocket closed after rejection")
+})
+
+test("wisp v2 password auth: missing credentials close with 0xc2", async () => {
+  config.auth_username = "alice"
+  config.auth_password = "s3cr3t"
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1", 2)
+    wisp.setup()
+
+    //the client replies with an INFO packet but no password auth extension
+    await wisp.handle_ws_message(msg(clientInfoPacket([{ id: 0x05, payload: new Uint8Array(0) }])))
+    const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 0)
+    assert.ok(closeMsg, "CLOSE(0) emitted for missing credentials")
+    assert.equal(closeMsg[5], 0xc2, "reason is AUTH_MISSING_CREDENTIALS")
+    assert.equal(ws.handler.closed, true, "websocket closed after auth failure")
+  } finally {
+    config.auth_username = null
+    config.auth_password = null
+  }
+})
+
+test("wisp v2 password auth: bad credentials close with 0xc0", async () => {
+  config.auth_username = "alice"
+  config.auth_password = "s3cr3t"
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1", 2)
+    wisp.setup()
+
+    await wisp.handle_ws_message(msg(clientInfoPacket([
+      { id: 0x05, payload: new Uint8Array(0) },
+      { id: 0x02, payload: passwordAuthPayload("alice", "wrong") }
+    ])))
+    const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 0)
+    assert.ok(closeMsg, "CLOSE(0) emitted for bad credentials")
+    assert.equal(closeMsg[5], 0xc0, "reason is AUTH_BAD_PASSWORD")
+    assert.equal(ws.handler.closed, true, "websocket closed after auth failure")
+  } finally {
+    config.auth_username = null
+    config.auth_password = null
+  }
+})
+
+test("wisp v2 password auth: repeated failures from one ip are throttled with 0x49", async () => {
+  config.auth_username = "alice"
+  config.auth_password = "s3cr3t"
+  ratelimit.enabled = true
+  ratelimit.auth_fail_limit = 2
+  try {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      const ws = makeWs()
+      const wisp = new WispConnection(ws, "/", "127.0.0.1", 2)
+      wisp.setup()
+
+      await wisp.handle_ws_message(msg(clientInfoPacket([{ id: 0x05, payload: new Uint8Array(0) }])))
+      const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 0)
+      assert.ok(closeMsg, `CLOSE(0) emitted on attempt ${attempt}`)
+      assert.equal(closeMsg[5], attempt > ratelimit.auth_fail_limit ? 0x49 : 0xc2,
+        `attempt ${attempt} past the limit closes with 0x49 throttled`)
+      assert.equal(ws.handler.closed, true, "websocket closed after auth failure")
+    }
+  } finally {
+    config.auth_username = null
+    config.auth_password = null
+    ratelimit.enabled = false
+  }
+})
+
+test("wisp v2 password auth: matching credentials complete the handshake", async () => {
+  config.auth_username = "alice"
+  config.auth_password = "s3cr3t"
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1", 2)
+    wisp.setup()
+
+    await wisp.handle_ws_message(msg(clientInfoPacket([
+      { id: 0x05, payload: new Uint8Array(0) },
+      { id: 0x02, payload: passwordAuthPayload("alice", "s3cr3t") }
+    ])))
+    assert.equal(wisp.handshake_done, true, "handshake completes with valid credentials")
+    const cont = ws.handler.msgs.find(m => m[0] === 0x03 && (m[1] | (m[2] << 8)) === 0)
+    assert.ok(cont, "CONTINUE(0) sent after successful auth")
+    assert.equal(ws.handler.closed, false, "websocket stays open")
+  } finally {
+    config.auth_username = null
+    config.auth_password = null
+  }
+})
+
+test("wisp v2 stream open confirmation CONTINUE is sent after connect", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1", 2)
+  wisp.setup()
+  await wisp.handle_ws_message(msg(clientInfoPacket([{ id: 0x05, payload: new Uint8Array(0) }])))
+
+  await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+  await tick()
+
+  const confirm = ws.handler.msgs.find(m => m[0] === 0x03 && (m[1] | (m[2] << 8)) === 1)
+  assert.ok(confirm, "CONTINUE for the stream sent after its socket connected")
+})
+
+test("per-connection stream cap closes excess streams with 0x49", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  config.stream_limit_total = 2
+  try {
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await wisp.handle_ws_message(msg(connectPacket(2, "example.com", 80)))
+    await wisp.handle_ws_message(msg(connectPacket(3, "example.com", 80)))
+    await tick()
+
+    const closeMsg = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 3)
+    assert.ok(closeMsg, "excess stream closed")
+    assert.equal(closeMsg[5], 0x49, "reason is CONN_THROTTLED")
+    assert.equal(3 in wisp.active_streams, false, "excess stream cleaned up")
+    assert.equal(1 in wisp.active_streams, true, "first stream remains")
+    assert.equal(2 in wisp.active_streams, true, "second stream remains")
+  } finally {
+    config.stream_limit_total = 50
+  }
+})
+
+test("hostname and port blocklists close with 0x48", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  config.hostname_blocklist = ["evil.com"]
+  config.port_blocklist = [25]
+  try {
+    await wisp.handle_ws_message(msg(connectPacket(1, "evil.com", 80)))
+    await tick()
+    const close1 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1)
+    assert.ok(close1, "blocked hostname closed")
+    assert.equal(close1[5], 0x48, "reason is HOST_BLOCKED")
+
+    //subdomains of a blocked host are blocked too
+    await wisp.handle_ws_message(msg(connectPacket(2, "mail.evil.com", 80)))
+    await tick()
+    const close2 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 2)
+    assert.equal(close2 && close2[5], 0x48, "blocked subdomain closed with HOST_BLOCKED")
+
+    await wisp.handle_ws_message(msg(connectPacket(3, "example.com", 25)))
+    await tick()
+    const close3 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 3)
+    assert.ok(close3, "blocked port closed")
+    assert.equal(close3[5], 0x48, "reason is HOST_BLOCKED")
+  } finally {
+    config.hostname_blocklist = []
+    config.port_blocklist = []
+  }
+})
+
+test("destination allowlist refuses hosts not in ALLOW_HOSTNAME", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  config.hostname_allowlist = ["example.com"]
+  try {
+    //allowlisted: exact match and subdomains are accepted
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await wisp.handle_ws_message(msg(connectPacket(2, "www.example.com", 80)))
+    await tick()
+    const close1 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1)
+    const close2 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 2)
+    assert.equal(close1, undefined, "allowlisted hostname opens")
+    assert.equal(close2, undefined, "allowlisted subdomain opens")
+
+    //everything else is refused with 0x48
+    await wisp.handle_ws_message(msg(connectPacket(3, "evil.com", 80)))
+    await tick()
+    const close3 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 3)
+    assert.ok(close3, "non-allowlisted hostname closed")
+    assert.equal(close3[5], 0x48, "reason is HOST_BLOCKED")
+  } finally {
+    config.hostname_allowlist = []
+  }
+})
+
+test("invalid stream information closes with 0x41", async () => {
+  const ws = makeWs()
+  const wisp = new WispConnection(ws, "/", "127.0.0.1")
+  wisp.setup()
+
+  //stream type unknown (0x03)
+  await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80, 0x03)))
+  await tick()
+  const close1 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1)
+  assert.equal(close1 && close1[5], 0x41, "invalid stream type closed with INVALID_INFO")
+
+  //truncated payload (no port bytes)
+  await wisp.handle_ws_message(msg(new Uint8Array([0x01, 0x02, 0x00, 0x00, 0x00, 0x01])))
+  await tick()
+  const close2 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 2)
+  assert.equal(close2 && close2[5], 0x41, "truncated CONNECT payload closed with INVALID_INFO")
+})
+
+test("client data sent while the socket is still connecting is delivered", async () => {
+  const orig = TCPConnection.prototype.connect
+  TCPConnection.prototype.connect = async function () {
+    await tick(30)
+  }
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+
+    //start the CONNECT but don't wait for it: the connect() is now slow
+    const pending = wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick(0)
+    //early data arrives while connect() is still in flight
+    await wisp.handle_ws_message(msg(create_packet(0x02, 1, encode("early"))))
+    await pending
+
+    //pump must have flushed the queued data once the socket came up
+    let delivered = false
+    const deadline = Date.now() + 2000
+    while (!delivered && Date.now() < deadline) {
+      const stream = streamOf(wisp, 1)
+      if (stream && stream.conn) delivered = stream.conn.sent.some(d => decode(d) === "early")
+      await tick(5)
+    }
+    assert.equal(delivered, true, "early data reached the remote socket after connect")
+  } finally {
+    TCPConnection.prototype.connect = orig
+  }
+})
+
+//a fake ws whose send() is slow until _slow is cleared, simulating a
+//downstream client that stalls consuming DATA frames
+function makeSlowClientWs(delayMs) {
+  const ws = makeWs()
+  ws._slow = true
+  ws.send = async bytes => {
+    if (ws._slow) await new Promise(r => setTimeout(r, delayMs))
+    ws.handler.msgs.push(new Uint8Array(bytes))
+  }
+  return ws
+}
+
+function connectStalled(wisp, id) {
+  return wisp.handle_ws_message(msg(connectPacket(id, "example.com", 80)))
+}
+
+test("downstream queue is bounded: a slow client stalls the tcp reader", async () => {
+  const origBuffer = config.downstream_buffer
+  const origTimeout = config.downstream_stall_timeout
+  config.downstream_buffer = 5
+  config.downstream_stall_timeout = 60000 //long: we only assert the bound
+  try {
+    const ws = makeSlowClientWs(20)
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await connectStalled(wisp, 1)
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    //remote producer dumps many chunks faster than the slow client consumes
+    const blob = new TextEncoder().encode("x".repeat(10))
+    for (let i = 0; i < 100; i++) stream.conn._push(blob)
+    await tick(200)
+
+    assert.ok(stream.out_queue.length <= config.downstream_buffer,
+      `out_queue never exceeds the cap (len=${stream.out_queue.length})`)
+    assert.ok(stream.conn.recv_queue.length > 0,
+      "tcp reader stopped while the buffer is full (recv_queue backlog left)")
+    wisp.close_all()
+  } finally {
+    config.downstream_buffer = origBuffer
+    config.downstream_stall_timeout = origTimeout
+  }
+})
+
+test("stalled downstream client: stream is proactively closed with 0x03", async () => {
+  const origBuffer = config.downstream_buffer
+  const origTimeout = config.downstream_stall_timeout
+  config.downstream_buffer = 3
+  config.downstream_stall_timeout = 100
+  try {
+    const ws = makeSlowClientWs(40)
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await connectStalled(wisp, 1)
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    const blob = new TextEncoder().encode("x".repeat(10))
+    for (let i = 0; i < 20; i++) stream.conn._push(blob)
+
+    let closed = false
+    const deadline = Date.now() + 3000
+    while (!closed && Date.now() < deadline) {
+      const close = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1 && m[5] === 0x03)
+      closed = !!close
+      await tick(20)
+    }
+    assert.ok(closed, "stalled stream is closed proactively")
+    assert.equal(stream.closed, true, "stream entry is torn down")
+  } finally {
+    config.downstream_buffer = origBuffer
+    config.downstream_stall_timeout = origTimeout
+  }
+})
+
+test("draining a stalled stream resumes delivery without closing", async () => {
+  const origBuffer = config.downstream_buffer
+  const origTimeout = config.downstream_stall_timeout
+  config.downstream_buffer = 3
+  config.downstream_stall_timeout = 60000
+  try {
+    const ws = makeSlowClientWs(40)
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await connectStalled(wisp, 1)
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    const blob = new TextEncoder().encode("abc")
+    for (let i = 0; i < 30; i++) stream.conn._push(blob)
+    await tick()
+
+    //client starts consuming fast again
+    ws._slow = false
+
+    let delivered = false
+    const deadline = Date.now() + 3000
+    while (!delivered && Date.now() < deadline) {
+      await tick(10)
+      const dataMsgs = ws.handler.msgs.filter(m => m[0] === 0x02 && (m[1] | (m[2] << 8)) === 1)
+      delivered = dataMsgs.reduce((n, m) => n + m.length - 5, 0) === 30 * 3
+    }
+    assert.ok(delivered, "all 30 remote chunks reached the client after draining")
+    assert.equal(stream.closed, false, "stream was not closed by the stall")
+    assert.equal(stream.stalled_at, null, "stall flag resets once the queue drains")
+    wisp.close_all()
+  } finally {
+    config.downstream_buffer = origBuffer
+    config.downstream_stall_timeout = origTimeout
+  }
+})
+
+test("idle sweep reclaims streams silent past stream_idle_timeout with 0x47", async () => {
+  const origTimeout = config.stream_idle_timeout
+  config.stream_idle_timeout = 50
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+    const stream = streamOf(wisp, 1)
+    assert.ok(stream, "stream opened")
+
+    //make stream 1 look idle, then an unrelated inbound packet runs the sweep
+    stream.last_activity = Date.now() - 1000
+    await wisp.handle_ws_message(msg(new Uint8Array([0x02, 0x02, 0x00, 0x00, 0x00, 0x68, 0x69]))) //DATA stream 2
+    await tick()
+
+    const close1 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1)
+    assert.ok(close1, "idle stream closed")
+    assert.equal(close1[5], 0x47, "reason is TRANSFER_TIMEOUT")
+    assert.equal(stream.closed, true, "stream entry is torn down")
+  } finally {
+    config.stream_idle_timeout = origTimeout
+  }
+})
+
+test("idle sweep spares streams with recent activity", async () => {
+  const origTimeout = config.stream_idle_timeout
+  config.stream_idle_timeout = 50
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+
+    //fresh activity then an unrelated inbound packet -> nothing swept
+    streamOf(wisp, 1).last_activity = Date.now() - 10
+    await wisp.handle_ws_message(msg(new Uint8Array([0x02, 0x02, 0x00, 0x00, 0x00, 0x68, 0x69]))) //DATA stream 2
+    await tick()
+
+    const close1 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1)
+    assert.equal(close1, undefined, "active stream stays open")
+    wisp.close_all()
+  } finally {
+    config.stream_idle_timeout = origTimeout
+  }
+})
+
+test("stream activity (client data) resets the idle clock", async () => {
+  const origTimeout = config.stream_idle_timeout
+  config.stream_idle_timeout = 50
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+
+    const stream = streamOf(wisp, 1)
+    const staleBefore = () => Date.now() - stream.last_activity > config.stream_idle_timeout
+
+    //force the stream old, then a client DATA packet refreshes last_activity
+    stream.last_activity = Date.now() - 5000
+    await wisp.handle_ws_message(msg(new Uint8Array([0x02, 0x01, 0x00, 0x00, 0x00, 0x68, 0x69]))) //DATA "hi" stream 1
+    await tick()
+    assert.ok(!staleBefore(), "client data refreshed the idle clock")
+
+    //now let it go stale and sweep with an unrelated inbound packet
+    stream.last_activity = Date.now() - 1000
+    await wisp.handle_ws_message(msg(new Uint8Array([0x02, 0x02, 0x00, 0x00, 0x00, 0x68, 0x69]))) //DATA stream 2
+    await tick()
+    const close1 = ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1)
+    assert.ok(close1 && close1[5] === 0x47, "idle stream closed with TRANSFER_TIMEOUT")
+  } finally {
+    config.stream_idle_timeout = origTimeout
+  }
+})
+
+test("bandwidth cap: over-budget client streams close with 0x49 and new streams are refused", async () => {
+  //a fresh ip, so the stub's per-client budget starts at bandwidth_limit
+  const ip = "192.0.2.1"
+  const origEnabled = ratelimit.enabled
+  const origLimit = ratelimit.bandwidth_limit
+  const origConnections = ratelimit.connections_limit
+  ratelimit.enabled = true
+  ratelimit.bandwidth_limit = 10
+  ratelimit.connections_limit = 50 //only the byte budget should bite
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", ip)
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    const closeWith = (id, reason) => ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === id && m[5] === reason)
+    const throttle = (id) => closeWith(id, 0x49)
+
+    //6 bytes relayed stays within the 10-byte budget
+    await wisp.handle_ws_message(msg(create_packet(0x02, 1, encode("123456"))))
+    await tick()
+    assert.equal(throttle(1), undefined, "under-budget data is relayed")
+
+    //another 6 bytes exhausts the budget and closes every stream with 0x49
+    await wisp.handle_ws_message(msg(create_packet(0x02, 1, encode("abcdef"))))
+    await tick()
+    const closed = throttle(1)
+    assert.ok(closed, "stream closed once the budget is spent")
+    assert.equal(stream.closed, true, "stream entry is torn down")
+
+    //while the budget is spent, new CONNECTs are refused with 0x49 too
+    await wisp.handle_ws_message(msg(connectPacket(2, "example.com", 80)))
+    await tick()
+    assert.ok(throttle(2), "over-budget client cannot open further streams")
+  } finally {
+    ratelimit.enabled = origEnabled
+    ratelimit.bandwidth_limit = origLimit
+    ratelimit.connections_limit = origConnections
+  }
+})
+
+test("bandwidth cap: a spent budget ends tcp->ws relay with 0x49", async () => {
+  const ip = "198.51.100.1"
+  const origEnabled = ratelimit.enabled
+  const origLimit = ratelimit.bandwidth_limit
+  ratelimit.enabled = true
+  ratelimit.bandwidth_limit = 5
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", ip)
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    //remote produces an 8-byte chunk: 5 allowed, the rest pushes over budget
+    stream.conn._push(encode("12345678"))
+    let throttled = false
+    const deadline = Date.now() + 3000
+    while (!throttled && Date.now() < deadline) {
+      await tick(10)
+      throttled = !!ws.handler.msgs.find(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1 && m[5] === 0x49)
+    }
+    assert.ok(throttled, "tcp->ws relay into a spent budget closes with 0x49")
+    assert.equal(stream.closed, true, "stream entry is torn down")
+  } finally {
+    ratelimit.enabled = origEnabled
+    ratelimit.bandwidth_limit = origLimit
+  }
+})
+
+test("wire coalescing: a burst of small tcp chunks becomes one DATA packet", async () => {
+  const origMax = config.coalesce_max
+  const origTimeout = config.coalesce_timeout
+  config.coalesce_max = 65536
+  config.coalesce_timeout = 20
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    stream.conn._push(encode("abc"))
+    stream.conn._push(encode("def"))
+    stream.conn._push(encode("ghi"))
+    await tick(40) //let the coalesce timer deliver the parked batch
+
+    const dataPackets = ws.handler.msgs.filter(m => m[0] === 0x02 && (m[1] | (m[2] << 8)) === 1)
+    assert.equal(dataPackets.length, 1, "burst delivered as a single DATA packet")
+    assert.equal(decode(dataPackets[0].slice(5)), "abcdefghi", "payload is the concatenated burst")
+  } finally {
+    config.coalesce_max = origMax
+    config.coalesce_timeout = origTimeout
+  }
+})
+
+test("wire coalescing: a full batch flushes immediately without waiting for the timer", async () => {
+  const origMax = config.coalesce_max
+  const origTimeout = config.coalesce_timeout
+  config.coalesce_max = 10
+  config.coalesce_timeout = 5000
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    stream.conn._push(encode("ab"))
+    stream.conn._push(encode("cde"))
+    await tick(5)
+    assert.equal(
+      ws.handler.msgs.filter(m => m[0] === 0x02 && (m[1] | (m[2] << 8)) === 1).length,
+      0, "bytes below the burst cap are parked, not sent")
+
+    stream.conn._push(encode("fghij")) //now 10 bytes >= coalesce_max -> flush right away
+    await tick(5)
+
+    const dataPackets = ws.handler.msgs.filter(m => m[0] === 0x02 && (m[1] | (m[2] << 8)) === 1)
+    assert.equal(dataPackets.length, 1, "boundary chunk flushes the whole batch")
+    assert.equal(decode(dataPackets[0].slice(5)), "abcdefghij")
+  } finally {
+    config.coalesce_max = origMax
+    config.coalesce_timeout = origTimeout
+  }
+})
+
+test("wire coalescing: the parked tail is flushed before a voluntary close on EOF", async () => {
+  const origMax = config.coalesce_max
+  const origTimeout = config.coalesce_timeout
+  config.coalesce_max = 65536
+  config.coalesce_timeout = 5000
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    stream.conn._push(encode("tail"))
+    stream.conn.eof()
+    await tick(10)
+
+    const dataPackets = ws.handler.msgs.filter(m => m[0] === 0x02 && (m[1] | (m[2] << 8)) === 1)
+    assert.equal(dataPackets.length, 1, "tail bytes are delivered, not dropped")
+    assert.equal(decode(dataPackets[0].slice(5)), "tail")
+    assert.ok(
+      ws.handler.msgs.some(m => m[0] === 0x04 && (m[1] | (m[2] << 8)) === 1 && m[5] === 0x02),
+      "remote EOF still closes the stream voluntarily")
+  } finally {
+    config.coalesce_max = origMax
+    config.coalesce_timeout = origTimeout
+  }
+})
+
+test("wire coalescing: timeout 0 keeps one DATA packet per chunk", async () => {
+  const origMax = config.coalesce_max
+  const origTimeout = config.coalesce_timeout
+  config.coalesce_max = 65536
+  config.coalesce_timeout = 0
+  try {
+    const ws = makeWs()
+    const wisp = new WispConnection(ws, "/", "127.0.0.1")
+    wisp.setup()
+    await wisp.handle_ws_message(msg(connectPacket(1, "example.com", 80)))
+    await tick()
+    const stream = streamOf(wisp, 1)
+
+    stream.conn._push(encode("ab"))
+    stream.conn._push(encode("cd"))
+    await tick()
+
+    const dataPackets = ws.handler.msgs.filter(m => m[0] === 0x02 && (m[1] | (m[2] << 8)) === 1)
+    assert.equal(dataPackets.length, 2, "each chunk is relayed as its own DATA packet")
+    assert.equal(decode(dataPackets[0].slice(5)), "ab")
+    assert.equal(decode(dataPackets[1].slice(5)), "cd")
+  } finally {
+    config.coalesce_max = origMax
+    config.coalesce_timeout = origTimeout
+  }
+})
