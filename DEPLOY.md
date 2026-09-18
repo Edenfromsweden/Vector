@@ -135,6 +135,32 @@ the app -- they serve the page as text or block its scripts. Verified across
 .html, .xhtml and .svg. The frontend only runs where a real web host serves
 it, which is what these Cloudflare hostnames are.
 
+## Connect the repo to Cloudflare Pages (auto-deploy)
+
+The hands-off way to deploy: connect this GitHub repo to a Cloudflare Pages
+project once, and every push rebuilds and redeploys automatically. Cloudflare
+talks to GitHub from its own servers, so this works even where GitHub is
+blocked on your network, and it needs no API token and no local tooling.
+
+One-time setup (all in the browser):
+
+1. Cloudflare dashboard -> **Workers & Pages** -> **Create** -> **Pages** ->
+   **Connect to Git** -> authorize GitHub -> pick the **Vector** repo, branch
+   `main`.
+2. Build settings:
+   - Framework preset: **None**
+   - Build command: `npm run build:pages`
+   - Build output directory: `dist`
+   - (Node version is pinned by `.node-version` = 22; nothing to set.)
+3. **Save and Deploy.** The first build runs; you get a `*.pages.dev` URL.
+
+After it builds, add your domain: the Pages project -> **Custom domains** ->
+add `v.zilkcz.com` (remove it from the old `vector-site` Worker first, under
+that Worker's Settings -> Domains & Routes, or use a spare subdomain to test).
+
+From then on: I push a change, Cloudflare rebuilds, the site updates. Nothing
+for you to upload.
+
 ## Making more links (extra subdomains)
 
 Every hostname in `vector-site/wrangler.toml` is served by the one Worker from
