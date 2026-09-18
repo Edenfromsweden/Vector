@@ -14,6 +14,7 @@
 		"build:svg": "node scripts/build-svg-shell.mjs",
 		"smoke": "node scripts/smoke.mjs",
 		"deploy:pages": "npx wrangler pages deploy dist",
+		"deploy:site": "npm run build:pages && cd vector-site && npx wrangler deploy",
 		"format": "prettier --write .",
 		"lint": "eslint ./src/",
 		"lint:fix": "eslint ./src/ --fix"

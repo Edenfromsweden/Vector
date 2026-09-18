@@ -110,6 +110,33 @@ a cheap **custom domain** ($1–12/yr) put behind Cloudflare and used for both P
 the Worker route, so traffic looks like an ordinary uncategorized site. That's a
 purchase decision — not free.
 
+## Making more links (extra subdomains)
+
+Every hostname in `vector-site/wrangler.toml` is served by the one Worker from
+the same build, so each is a complete, independent link to the app. They are
+`custom_domain` routes, so Cloudflare creates the DNS for each automatically on
+deploy -- no manual DNS.
+
+Add a link:
+
+1. Add one line to the `routes` list in `vector-site/wrangler.toml`, e.g.
+   `{ pattern = "library.zilkcz.com", custom_domain = true },`
+2. `npm run deploy:site` (builds `dist/` and deploys the Worker)
+
+That is it -- `https://library.zilkcz.com` now serves the app.
+
+Retire a blocked link: delete its line, `npm run deploy:site`, then remove its
+DNS record in the Cloudflare dashboard (Websites -> zilkcz.com -> DNS).
+
+Naming: a content filter categorises by hostname, so plain, boring names
+(`docs`, `read`, `go`, `notes`, `study`) last far longer than obvious ones
+(`proxy`, `unblock`, `vpn`). Keep a couple in reserve so a fresh link is one
+redeploy away when one gets caught.
+
+Requirements: the `zilkcz.com` zone must be on the same Cloudflare account as
+the Worker (it is -- that is how `v.zilkcz.com` auto-created its DNS), and
+`npx wrangler login` must have been run once on the machine you deploy from.
+
 ## Testing it "beats the filter" (Securly stand-in)
 
 Real Securly can't be installed on a personal Chromebook (it's a force-installed,

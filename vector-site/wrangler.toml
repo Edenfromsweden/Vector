@@ -3,8 +3,23 @@ main = "src/index.js"
 compatibility_date = "2025-01-01"
 account_id = "a2f2f2d84abce47bdc065c0f8048f025"
 
-# Fresh, unblocked hostname on the user's own domain (auto-creates DNS).
-routes = [{ pattern = "v.zilkcz.com", custom_domain = true }]
+# Every hostname below is served by this one Worker from the same dist/ build,
+# so each is a fully working, independent link to the app. They are all
+# custom_domain routes: on deploy, Cloudflare auto-creates the DNS record for
+# each on the zilkcz.com zone, so there is nothing to wire up by hand.
+#
+# To mint another link: add one line here, then run `npm run deploy:site`.
+# To retire one that got blocked: delete its line, redeploy, and remove its
+# DNS record in the Cloudflare dashboard. Prefer plain, boring hostnames --
+# a filter categorises by name, so "docs"/"read"/"go" outlast "proxy"/"unblock".
+routes = [
+  { pattern = "v.zilkcz.com", custom_domain = true },
+  { pattern = "go.zilkcz.com", custom_domain = true },
+  { pattern = "read.zilkcz.com", custom_domain = true },
+  { pattern = "docs.zilkcz.com", custom_domain = true },
+  { pattern = "study.zilkcz.com", custom_domain = true },
+  { pattern = "notes.zilkcz.com", custom_domain = true },
+]
 
 # Serve the built static site (dist/) and let the worker wrap every response
 # with the cross-origin-isolation headers the proxy needs.
