@@ -133,7 +133,17 @@
 
 	function openGame(g) {
 		if (!g || !g.file) return;
-		window.location.href = g.file;
+		// Open the game in the standalone viewer (games/play.html), which carries
+		// the back/favorite/download bar and frames the game. The viewer is not
+		// cross-origin-isolated, so -- unlike the app shell -- it can embed a game
+		// that loads third-party assets. Navigate to it rather than framing it
+		// here.
+		const params = new URLSearchParams({
+			src: g.file,
+			name: g.name || "Game",
+			id: g.id || "",
+		});
+		window.location.href = "games/play.html?" + params.toString();
 	}
 
 	if (openBtn)

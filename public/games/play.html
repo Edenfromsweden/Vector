@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Vector — Game</title>
+		<link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+		<link rel="stylesheet" href="../index.css" />
+		<style>
+			/* Standalone game viewer. It lives at /games/play.html so it inherits
+			   the /games/* COEP exemption -- it is NOT cross-origin-isolated, which
+			   is exactly why it can frame a game that pulls third-party assets. The
+			   main app shell is isolated (for the proxy), so it can't do this; a
+			   separate top-level page can. */
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				background: #0b0817;
+			}
+			body {
+				display: flex;
+				flex-direction: column;
+				font-family: var(--font);
+				color: var(--text);
+			}
+			#gv-frame {
+				flex: 1;
+				width: 100%;
+				border: 0;
+				background: #0b0817;
+			}
+			#gv-title {
+				min-width: 0;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="gv-bar">
+			<button class="vbtn" id="gv-back" title="Back" aria-label="Back">
+				&lsaquo;
+			</button>
+			<span id="gv-title" class="gv-title"></span>
+			<button class="vbtn" id="gv-fav" title="Favorite" aria-pressed="false">
+				&#9734;
+			</button>
+			<a class="vbtn" id="gv-dl" title="Download HTML" download>&#10515;</a>
+		</div>
+		<iframe
+			id="gv-frame"
+			title="Game"
+			allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write"
+			allowfullscreen="allowfullscreen"
+		></iframe>
+
+		<script>
+			"use strict";
+			(function () {
+				var q = new URLSearchParams(location.search);
+				var src = q.get("src") || "";
+				var name = q.get("name") || "Game";
+				var id = q.get("id") || "";
+
+				var frame = document.getElementById("gv-frame");
+				var title = document.getElementById("gv-title");
+				var back = document.getElementById("gv-back");
+				var fav = document.getElementById("gv-fav");
+				var dl = document.getElementById("gv-dl");
+
+				document.title = "Vector — " + name;
+				title.textContent = name;
+
+				// Only allow relative game paths, so this can't be turned into an
+				// open redirect / arbitrary framer via a crafted ?src.
+				if (src && !/^([a-z]+:)?\/\//i.test(src)) {
+					frame.src = src;
+					dl.href = src;
+					dl.setAttribute("download", src.split("/").pop() || "game.html");
+				} else {
+					title.textContent = "Game not found";
+				}
+
+				// Back returns to whatever launched this (the Vector shell).
+				back.addEventListener("click", function () {
+					if (history.length > 1) history.back();
+					else location.href = "../";
+				});
+
+				// Favorites live in the same cookie the grid reads.
+				var FAV = "vector_favs";
+				function getFavs() {
+					var m = document.cookie.match(/(?:^|;\s*)vector_favs=([^;]*)/);
+					if (!m) return [];
+					try {
+						return JSON.parse(decodeURIComponent(m[1])) || [];
+					} catch (e) {
+						return [];
+					}
+				}
+				function saveFavs(list) {
+					var exp = new Date(Date.now() + 365 * 864e5).toUTCString();
+					document.cookie =
+						FAV +
+						"=" +
+						encodeURIComponent(JSON.stringify(list)) +
+						"; expires=" +
+						exp +
+						"; path=/; SameSite=Lax";
+				}
+				function syncFav() {
+					var on = getFavs().indexOf(id) >= 0;
+					fav.textContent = on ? "★" : "☆";
+					fav.classList.toggle("on", on);
+					fav.setAttribute("aria-pressed", on ? "true" : "false");
+				}
+				if (id) {
+					syncFav();
+					fav.addEventListener("click", function () {
+						var f = getFavs();
+						var i = f.indexOf(id);
+						if (i >= 0) f.splice(i, 1);
+						else f.push(id);
+						saveFavs(f);
+						syncFav();
+					});
+				} else {
+					fav.style.display = "none";
+				}
+			})();
+		</script>
+	</body>
+</html>
