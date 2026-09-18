@@ -12,6 +12,11 @@
  *    it CAN reach those sites -- enough to load Discord text/login. It is someone
  *    else's server: treat it as unreliable and slower, and don't sign in to
  *    anything you actually care about through it.
+ *  - "mine": your OWN Wisp server on a real host (a DigitalOcean droplet), fronted
+ *    by Cloudflare at wss://wisp2.zilkcz.com/wisp/. Reaches Discord like "public"
+ *    does, but private, reliable, and yours. Set this up per DEPLOY.md -- until
+ *    the droplet is running, ?backend=mine will just fail to connect. Note the
+ *    "/wisp/" path: the repo's own server (src/index.js) serves Wisp there.
  *
  * Which one is chosen, highest priority first:
  *   1. ?backend=public  (or ?backend=worker) in the URL   -- also remembered
@@ -30,6 +35,7 @@
 	var BACKENDS = {
 		worker: "wss://wisp.zilkcz.com/",
 		public: "wss://anura.pro/",
+		mine: "wss://wisp2.zilkcz.com/wisp/",
 	};
 	var DEFAULT = "worker";
 
@@ -56,8 +62,8 @@
 	}
 
 	window.setBackend = function (n) {
-		if (n !== "worker" && n !== "public") {
-			console.warn('setBackend: use "worker" or "public"');
+		if (!BACKENDS[n]) {
+			console.warn("setBackend: use one of " + Object.keys(BACKENDS).join(", "));
 			return;
 		}
 		try {

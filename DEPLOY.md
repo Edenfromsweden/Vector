@@ -224,9 +224,98 @@ If the proxy loads the "blocked" site, you've demonstrated the real evasion mech
 - **Datacenter-IP blocking** — Roblox/Discord sometimes refuse Cloudflare/datacenter IPs.
   A refused connection there is a real-world finding, not a bug.
 
+## Switchable backend (`public/wisp-config.js`)
+
+The frontend picks its Wisp server at load time, so you can reach Cloudflare-fronted
+sites without redeploying:
+
+| backend  | URL                              | reaches Discord / X / Cloudflare sites |
+| -------- | -------------------------------- | -------------------------------------- |
+| `worker` | `wss://wisp.zilkcz.com/`         | no (Worker `connect()` limit)          |
+| `public` | `wss://anura.pro/`               | yes — shared, unreliable, not private  |
+| `mine`   | `wss://wisp2.zilkcz.com/wisp/`   | yes — your own server (set up below)   |
+
+Choose with `?backend=<name>` in the URL (remembered in localStorage) or
+`setBackend("<name>")` in the console. Default is `worker`; localhost dev ignores
+this and uses its same-origin server.
+
+## Your own Wisp backend on a DigitalOcean droplet (the `mine` backend)
+
+This is the reliable, private way to reach Discord (text/login — voice is UDP and
+never works). The repo already **is** a Wisp server (`npm start`, `src/index.js`);
+this just runs it on an always-on box. We front it with a Cloudflare **Tunnel** so
+there are no open ports, no origin TLS certificate to manage, the edge-to-origin hop
+is encrypted, and the public URL sits on `zilkcz.com` (as hard to block as the Worker).
+
+1. **Create the droplet.** DigitalOcean → Create → Droplet → Ubuntu 24.04, Basic,
+   the cheapest size is plenty (a Wisp relay is I/O-bound), add your SSH key.
+
+2. **Install Node + the server.** SSH in (`ssh root@<droplet-ip>`), then:
+
+   ```bash
+   curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+   apt-get install -y nodejs git
+   npm install -g pnpm
+   git clone https://github.com/Edenfromsweden/Vector
+   cd Vector && pnpm install
+   ```
+
+   Optional: `src/index.js` sets `hostname_blacklist: [/example\.com/]` and family-filter
+   DNS (`1.1.1.3`). On your own box you can drop the blacklist and use `1.1.1.1` for
+   unfiltered DNS.
+
+3. **Run it as a service** so it survives reboots. Create `/etc/systemd/system/wisp.service`:
+
+   ```ini
+   [Unit]
+   Description=Vector Wisp server
+   After=network.target
+   [Service]
+   WorkingDirectory=/root/Vector
+   Environment=PORT=8080
+   ExecStart=/usr/bin/npm start
+   Restart=always
+   [Install]
+   WantedBy=multi-user.target
+   ```
+
+   Then `systemctl enable --now wisp`. It now serves Wisp at `ws://localhost:8080/wisp/`.
+
+4. **Expose it with a Cloudflare Tunnel** (no port-forwarding, no public port open):
+
+   ```bash
+   curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cf.deb
+   dpkg -i cf.deb
+   cloudflared tunnel login                 # opens a link; pick the zilkcz.com zone
+   cloudflared tunnel create vector-wisp
+   cloudflared tunnel route dns vector-wisp wisp2.zilkcz.com
+   ```
+
+   Create `~/.cloudflared/config.yml`:
+
+   ```yaml
+   tunnel: vector-wisp
+   credentials-file: /root/.cloudflared/<tunnel-id>.json
+   ingress:
+     - hostname: wisp2.zilkcz.com
+       service: http://localhost:8080
+     - service: http_status:404
+   ```
+
+   Then install it as a service: `cloudflared service install && systemctl enable --now cloudflared`.
+
+5. **Use it.** `wisp-config.js` already has `mine: "wss://wisp2.zilkcz.com/wisp/"`.
+   Visit `https://v.zilkcz.com/?backend=mine` (or `setBackend("mine")`), then load
+   Discord. To make it the default, move `mine` to `DEFAULT` in `wisp-config.js`.
+
+Cost is the droplet only (~$4–6/mo). The tunnel and the `zilkcz.com` hostname are free.
+Datacenter IPs occasionally get challenged by Discord; if a site refuses the connection
+that's an IP-reputation issue, not a bug.
+
 ## File map (what was added on top of the template)
 
-- `public/wisp-config.js` — sets `window.WISP_URL` (empty = same-origin dev).
+- `public/wisp-config.js` — picks the Wisp backend (worker/public/mine) and sets
+  `window.WISP_URL` (empty = same-origin dev).
 - `public/index.js` — patched to honor `window.WISP_URL`.
 - `public/index.html` — loads `wisp-config.js` before `index.js`.
 - `scripts/build-pages.mjs` — builds `dist/` for static hosting + `_headers`.
