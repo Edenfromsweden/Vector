@@ -231,6 +231,42 @@ ${forHtml(BOOT_REPORT).replace(/^\t{3}/gm, "\t\t")}
 	writeFileSync(`${out}/index.html`, shell);
 	console.log("Wrote app/index.html (HTML shell, for CDNs that serve HTML)");
 
+	// Third shell: a standalone XHTML document. Some CDNs (jsDelivr, and
+	// statically.io) deliberately serve .html as text/plain so they cannot be
+	// used as web hosts, and may block script inside .svg because SVG is an
+	// image format that can carry script. application/xhtml+xml is neither: a
+	// real scriptable document that is not .html and not an image.
+	//
+	// Unlike the SVG shell this needs no dom-shim and no :root background
+	// override -- <html> really is the document root here, so createElement
+	// builds HTML nodes and the body background propagates to the viewport the
+	// way the aurora canvas expects.
+	const xhtmlScripts = SCRIPTS.map(
+		(f) =>
+			`\t\t<script src="${f}" onerror="__vnote('${f.split("/").pop()}')"></script>`
+	).join("\n");
+
+	const xhtml = `<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+	<head>
+${BOOT_PROBE.replace(/^\t{3}/gm, "\t\t")}
+${toXhtml(meta).replace(/^\t{2}/gm, "\t\t")}
+		<link rel="stylesheet" href="index.css" />
+	</head>
+
+	<body>
+${BOOT_WARN.replace(/^\t{3}/gm, "\t\t")}
+${toXhtml(bodyInner).trimEnd()}
+${xhtmlScripts}
+${BOOT_REPORT.replace(/^\t{3}/gm, "\t\t")}
+	</body>
+</html>
+`;
+	writeFileSync(`${out}/index.xhtml`, xhtml);
+	console.log(
+		"Wrote app/index.xhtml (XHTML shell, for CDNs that plain-text .html)"
+	);
+
 	mkdirSync(`${out}/fonts`, { recursive: true });
 	for (const f of SHARED) {
 		copyFileSync(`${src}/${f}`, `${out}/${f}`);

@@ -1,7 +1,11 @@
 "use strict";
 
-/* Games section: reads games.json, renders a grid, plays games in an overlay,
- * lets you download a game's HTML, and stores favorites in a cookie. */
+/* Games section: reads games.json, renders a grid, opens a game by navigating
+ * to its HTML file, lets you download it, and stores favorites in a cookie.
+ *
+ * Games are NOT framed. The host serving them refuses to be embedded, so an
+ * iframe just shows "refused to connect"; navigating to the file avoids the
+ * framing headers entirely. Back returns here. */
 (function () {
 	const xel =
 		window.xel ||
@@ -12,13 +16,6 @@
 	const panel = document.getElementById("games");
 	const openBtn = document.getElementById("open-games");
 	const closeBtn = document.getElementById("games-close");
-
-	const view = document.getElementById("game-view");
-	const frame = document.getElementById("gv-frame");
-	const vTitle = document.getElementById("gv-title");
-	const vBack = document.getElementById("gv-back");
-	const vFav = document.getElementById("gv-fav");
-	const vDl = document.getElementById("gv-dl");
 
 	if (!grid) return;
 
@@ -135,31 +132,8 @@
 	}
 
 	function openGame(g) {
-		if (!view) return;
-		frame.src = g.file;
-		vTitle.textContent = g.name;
-		vDl.href = g.file;
-		vDl.download = fileName(g.file);
-		syncViewFav(g);
-		vFav.onclick = () => {
-			toggleFav(g.id);
-			syncViewFav(g);
-			render();
-		};
-		view.classList.add("show");
-		view.setAttribute("aria-hidden", "false");
-	}
-	function syncViewFav(g) {
-		const on = isFav(g.id);
-		vFav.textContent = on ? STAR : STAR_O;
-		vFav.classList.toggle("on", on);
-		vFav.setAttribute("aria-pressed", on ? "true" : "false");
-	}
-	function closeGame() {
-		if (!view) return;
-		view.classList.remove("show");
-		view.setAttribute("aria-hidden", "true");
-		frame.src = "about:blank";
+		if (!g || !g.file) return;
+		window.location.href = g.file;
 	}
 
 	if (openBtn)
@@ -173,7 +147,6 @@
 			panel.classList.remove("show");
 			panel.setAttribute("aria-hidden", "true");
 		});
-	if (vBack) vBack.addEventListener("click", closeGame);
 
 	fetch("games.json", { cache: "no-store" })
 		.then((r) => (r.ok ? r.json() : []))

@@ -27,6 +27,7 @@ const TYPES = {
 	".wasm": "application/wasm",
 	".woff2": "font/woff2",
 	".html": "text/html",
+	".xhtml": "application/xhtml+xml",
 };
 
 // Serves a build the way its host does: `bases` are tried in order, so the
@@ -210,6 +211,11 @@ async function main() {
 		[
 			"app/index.html (CDN HTML shell)",
 			`http://localhost:8801${CDN_PREFIX}/app/index.html`,
+			false,
+		],
+		[
+			"app/index.xhtml (CDN XHTML shell)",
+			`http://localhost:8801${CDN_PREFIX}/app/index.xhtml`,
 			false,
 		],
 		[
