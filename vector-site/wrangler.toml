@@ -12,6 +12,12 @@ account_id = "a2f2f2d84abce47bdc065c0f8048f025"
 # To retire one that got blocked: delete its line, redeploy, and remove its
 # DNS record in the Cloudflare dashboard. Prefer plain, boring hostnames --
 # a filter categorises by name, so "docs"/"read"/"go" outlast "proxy"/"unblock".
+#
+# To add a SECOND domain as a whole-zone fallback (survives a block of every
+# *.zilkcz.com at once): add that domain to this same Cloudflare account as a
+# zone, then add its subdomains here exactly like the ones below, e.g.
+#   { pattern = "go.example.net", custom_domain = true },
+# and redeploy. Same Worker, same build -- nothing else changes.
 routes = [
   { pattern = "v.zilkcz.com", custom_domain = true },
   { pattern = "go.zilkcz.com", custom_domain = true },
@@ -20,6 +26,14 @@ routes = [
   { pattern = "study.zilkcz.com", custom_domain = true },
   { pattern = "notes.zilkcz.com", custom_domain = true },
 ]
+
+# Zone-independent fallback. Cloudflare also serves this Worker at
+# vector-site.<your-account-subdomain>.workers.dev, on Cloudflare's own domain.
+# A block of the whole zilkcz.com zone does not touch it, because it is not
+# zilkcz.com. `npx wrangler deploy` prints the exact URL. (A filter may still
+# block workers.dev by category, but it is a genuinely separate domain and
+# costs nothing, so it is worth having on as a backstop.)
+workers_dev = true
 
 # Serve the built static site (dist/) and let the worker wrap every response
 # with the cross-origin-isolation headers the proxy needs.

@@ -110,6 +110,31 @@ a cheap **custom domain** ($1–12/yr) put behind Cloudflare and used for both P
 the Worker route, so traffic looks like an ordinary uncategorized site. That's a
 purchase decision — not free.
 
+## If a link gets blocked (layered fallback)
+
+Three layers, cheapest first:
+
+1. **One subdomain blocked** -> use the next one. That is what the several
+   `*.zilkcz.com` routes are for; switching is instant, nothing to deploy.
+
+2. **The whole `zilkcz.com` zone blocked** -> the Worker is also served at
+   `vector-site.<your-account>.workers.dev` (`workers_dev = true`), on
+   Cloudflare's own domain, which a zilkcz.com block does not touch.
+   `npx wrangler deploy` prints the exact URL -- note it down now, while
+   everything works, so you have it when you need it. A filter may block
+   workers.dev by category, so treat it as a backstop, not the main plan.
+
+3. **Durable whole-zone fallback** -> a second domain on the same Cloudflare
+   account. Add its subdomains to `routes` in `wrangler.toml` exactly like the
+   zilkcz.com ones and redeploy; same Worker, same build. This is the only
+   layer that fully survives losing zilkcz.com, because it does not depend on
+   it at all. A cheap second domain is the highest-value thing to add here.
+
+Note: statically.io (and githack, jsDelivr) cannot be a fallback that _runs_
+the app -- they serve the page as text or block its scripts. Verified across
+.html, .xhtml and .svg. The frontend only runs where a real web host serves
+it, which is what these Cloudflare hostnames are.
+
 ## Making more links (extra subdomains)
 
 Every hostname in `vector-site/wrangler.toml` is served by the one Worker from
