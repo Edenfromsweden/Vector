@@ -1,0 +1,43 @@
+# Deploy the front end to Cloudflare on every push to main.
+#
+# This exists so the site can be updated without a local machine: pushing to
+# GitHub (which is all you can do from a locked-down Chromebook) is enough to
+# rebuild dist/ and redeploy the Worker. No wrangler install, no CLI.
+#
+# One-time setup (done once, in a browser):
+#   1. Cloudflare dashboard -> My Profile -> API Tokens -> Create Token
+#      -> use the "Edit Cloudflare Workers" template -> create -> copy it.
+#   2. GitHub repo -> Settings -> Secrets and variables -> Actions
+#      -> New repository secret -> name: CLOUDFLARE_API_TOKEN, value: the token.
+# After that, every push to main deploys automatically. The account id is in
+# vector-site/wrangler.toml, so only the token is needed.
+
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch: {} # lets you trigger a deploy by hand from the Actions tab
+
+jobs:
+  deploy:
+    name: Build and deploy the Worker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npx pnpm@10.18.3 install --frozen-lockfile
+
+      - name: Build dist/
+        run: node scripts/build-pages.mjs
+
+      - name: Deploy to Cloudflare
+        run: npx wrangler@3 deploy
+        working-directory: vector-site
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
