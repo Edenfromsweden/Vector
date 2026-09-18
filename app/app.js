@@ -30,7 +30,11 @@ const bodyEl =
 		window.__vectorRoot ||
 		(document.querySelector("foreignObject") || {}).firstElementChild;
 	const warn = root && root.querySelector('[id="boot-warn"]');
-	if (warn) warn.setAttribute("hidden", "hidden");
+	if (!warn) return;
+	// Inline display:flex on the banner outranks [hidden] { display: none },
+	// so the attribute alone leaves it covering the whole page.
+	warn.style.display = "none";
+	warn.setAttribute("hidden", "hidden");
 })();
 
 /* ---- landing page elements ---- */

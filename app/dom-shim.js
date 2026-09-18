@@ -114,7 +114,11 @@ window.xel = function (tag) {
 	// Scripts are running, so retract the no-JS banner baked into the markup.
 	function hideBanner() {
 		var b = find("boot-warn");
-		if (b) b.setAttribute("hidden", "hidden");
+		if (!b) return;
+		// The banner carries an inline display:flex, which outranks the UA
+		// stylesheet's [hidden] { display: none }. Only an inline display wins.
+		b.style.display = "none";
+		b.setAttribute("hidden", "hidden");
 	}
 	hideBanner();
 	document.addEventListener("DOMContentLoaded", hideBanner);

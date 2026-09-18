@@ -65,6 +65,34 @@ async function check(page, label) {
 			return { w: Math.round(b.width), h: Math.round(b.height) };
 		};
 
+		// Landing state first, before any panel is opened over it. An element can
+		// carry [hidden] and still paint -- an inline display beats the UA rule --
+		// so measure what is actually on screen rather than trusting attributes.
+		const warn = q("boot-warn");
+		const hero = root.querySelector(".wordmark");
+		const landing = {
+			banner: warn ? box(warn) : null,
+			hero: hero ? box(hero) : null,
+			// In the SVG build the aurora canvas sits at z-index:-1 and the body
+			// must not paint a background over it (see the :root rule in
+			// build-svg-shell.mjs). A body background here means a flat page with
+			// no aurora, which renders fine and looks merely "wrong".
+			svgShell: !!fo,
+			bodyPaintsBackground: (() => {
+				const body = root.querySelector("body") || document.body;
+				if (!body) return null;
+				const cs = getComputedStyle(body);
+				return cs.backgroundImage !== "none";
+			})(),
+			topCentre: (() => {
+				const el = document.elementFromPoint(
+					Math.round(window.innerWidth / 2),
+					Math.round(window.innerHeight / 2)
+				);
+				return el ? el.id || el.className || el.tagName : "none";
+			})(),
+		};
+
 		q("open-games").dispatchEvent(
 			new MouseEvent("click", { bubbles: true, cancelable: true })
 		);
@@ -79,6 +107,7 @@ async function check(page, label) {
 		const frame = q("vframes").firstElementChild;
 
 		return {
+			...landing,
 			cards: q("games-grid").children.length,
 			card: card ? box(card) : null,
 			frame: frame ? { ns: frame.namespaceURI, ...box(frame) } : null,
@@ -87,6 +116,23 @@ async function check(page, label) {
 	});
 
 	const fail = [];
+
+	// The shell must actually be on screen. The boot banner is a full-viewport
+	// overlay that scripts retract; if it still paints, it hides the whole app.
+	if (r.banner && (r.banner.w || r.banner.h))
+		fail.push(
+			`boot banner is still visible (${r.banner.w}x${r.banner.h}) -- it covers the page`
+		);
+	if (!r.hero || !r.hero.w || !r.hero.h)
+		fail.push(`landing wordmark is not rendered: ${JSON.stringify(r.hero)}`);
+	if (r.topCentre === "boot-warn")
+		fail.push("boot banner is the topmost element at the centre of the page");
+	if (r.svgShell && r.bodyPaintsBackground)
+		fail.push(
+			"body paints a background in the SVG shell -- it covers the " +
+				"z-index:-1 aurora canvas, so the page renders without it"
+		);
+
 	if (!r.cards) fail.push("games grid is empty");
 	if (!r.card || !r.card.w || !r.card.h)
 		fail.push(`game card has no size: ${JSON.stringify(r.card)}`);
@@ -108,7 +154,9 @@ async function check(page, label) {
 		for (const f of fail) console.log(`        ${f}`);
 		return false;
 	}
-	console.log(`ok    ${label}  (${r.cards} cards, frame ${size})`);
+	console.log(
+		`ok    ${label}  (${r.cards} cards, frame ${size}, shell visible)`
+	);
 	return true;
 }
 

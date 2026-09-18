@@ -48,6 +48,23 @@ const SVG_STYLE = `			<style>/*<![CDATA[*/
 				html, body { width: 100%; height: 100%; }
 				foreignObject { overflow: visible; }
 				#sj-frame { position: fixed; inset: 0; width: 100vw; height: 100vh; border: 0; background: #0b0817; z-index: 100; }
+
+				/* The aurora canvas (#bg) sits at z-index:-1. In an HTML document the
+				   body background propagates to the viewport and is painted BEFORE
+				   negative z-index children, so the canvas shows through it. Inside
+				   <foreignObject> the <html> element is not the document root, so that
+				   background paints as an ordinary block background -- which comes
+				   AFTER negative z-index children in the painting order and buries the
+				   aurora. Paint the base gradient on the svg root instead (:root, the
+				   stacking context, painted first) and leave html/body transparent. */
+				:root {
+					background:
+						radial-gradient(1100px 620px at 12% -12%, rgba(100, 149, 237, 0.22), transparent 60%),
+						radial-gradient(1000px 720px at 92% 112%, rgba(124, 58, 237, 0.28), transparent 62%),
+						linear-gradient(158deg, #140d2c 0%, #180f31 44%, #0b0817 100%);
+					background-attachment: fixed;
+				}
+				html, body { background: transparent; }
 			/*]]>*/</style>`;
 
 // Visible only when no script ran at all, so a blocked or half-loaded shell
