@@ -87,7 +87,7 @@ const BOOT_PROBE = `			<script>/*<![CDATA[*/
 const BOOT_REPORT = `			<script>/*<![CDATA[*/
 				(function () {
 					var fo = document.querySelector("foreignObject");
-					var root = fo && fo.firstElementChild;
+					var root = fo ? fo.firstElementChild : document;
 					var warn = root && root.querySelector('[id="boot-warn"]');
 					if (!warn || warn.style.display === "none") return;
 					var detail = root.querySelector('[id="boot-detail"]');
@@ -194,7 +194,42 @@ ${body}
 `;
 
 	writeFileSync(`${out}/index.svg`, svg);
-	console.log("Wrote app/index.svg");
+	console.log("Wrote app/index.svg  (SVG shell, for CDNs that refuse HTML)");
+
+	// Plain-HTML shell for the same CDN path. Hosts differ: jsDelivr forces
+	// text/plain on HTML, which is the only reason the SVG wrapper exists, but
+	// other CDNs serve HTML normally and may sanitize or refuse scripts inside
+	// an SVG. Ship both and point the URL at whichever the host actually runs.
+	//
+	// This one needs no dom-shim: in a real HTML document createElement already
+	// builds HTML nodes, and the xel() fallback in app.js/games.js/bg.js works
+	// unchanged. Same scripts, same relative engine paths, no XHTML conversion.
+	const htmlScripts = SCRIPTS.map(
+		(f) =>
+			`\t\t<script src="${f}" onerror="__vnote('${f.split("/").pop()}')"></script>`
+	).join("\n");
+
+	const forHtml = (block) =>
+		block.replace(/\/\*<!\[CDATA\[\*\//g, "").replace(/\/\*\]\]>\*\//g, "");
+
+	const shell = `<!doctype html>
+<html lang="en">
+	<head>
+${forHtml(BOOT_PROBE).replace(/^\t{3}/gm, "\t\t")}
+${meta.replace(/^\t{2}/gm, "\t\t")}
+		<link rel="stylesheet" href="index.css" />
+	</head>
+
+	<body>
+${BOOT_WARN.replace(/^\t{3}/gm, "\t\t")}
+${bodyInner.trimEnd()}
+${htmlScripts}
+${forHtml(BOOT_REPORT).replace(/^\t{3}/gm, "\t\t")}
+	</body>
+</html>
+`;
+	writeFileSync(`${out}/index.html`, shell);
+	console.log("Wrote app/index.html (HTML shell, for CDNs that serve HTML)");
 
 	mkdirSync(`${out}/fonts`, { recursive: true });
 	for (const f of SHARED) {

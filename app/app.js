@@ -26,9 +26,12 @@ const bodyEl =
 // The markup ships a "no JavaScript ran" banner. This file running at all
 // disproves that, so retract it here too rather than only in dom-shim.js.
 (function () {
+	// The SVG shell roots the UI inside <foreignObject>; the HTML shell has no
+	// such wrapper, so fall back to the document itself.
 	const root =
 		window.__vectorRoot ||
-		(document.querySelector("foreignObject") || {}).firstElementChild;
+		(document.querySelector("foreignObject") || {}).firstElementChild ||
+		document;
 	const warn = root && root.querySelector('[id="boot-warn"]');
 	if (!warn) return;
 	// Inline display:flex on the banner outranks [hidden] { display: none },

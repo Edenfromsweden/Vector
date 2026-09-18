@@ -208,6 +208,11 @@ async function main() {
 			false,
 		],
 		[
+			"app/index.html (CDN HTML shell)",
+			`http://localhost:8801${CDN_PREFIX}/app/index.html`,
+			false,
+		],
+		[
 			"app/index.svg, dom-shim.js blocked",
 			`http://localhost:8801${CDN_PREFIX}/app/index.svg`,
 			true,

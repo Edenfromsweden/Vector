@@ -107,8 +107,8 @@ window.xel = function (tag) {
  * app.js / games.js leaves the page looking normal but completely inert. */
 (function () {
 	function find(id) {
-		var root = window.__vectorRoot;
-		return root ? root.querySelector('[id="' + id + '"]') : null;
+		var root = window.__vectorRoot || document;
+		return root.querySelector('[id="' + id + '"]');
 	}
 
 	// Scripts are running, so retract the no-JS banner baked into the markup.
