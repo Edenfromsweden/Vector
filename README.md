@@ -1,28 +1,61 @@
+<p align="center">
+	<img src="https://raw.githubusercontent.com/Edenfromsweden/Vector/main/public/favicon.svg" height="120" alt="Vector">
+</p>
+
 <h1 align="center">Vector</h1>
 
 <p align="center">A straight line to the open web.</p>
 
-Vector is an educational web proxy — a self-hosted front end built on
-[Scramjet](https://github.com/MercuryWorkshop/scramjet).
+<p align="center">
+	Vector is an educational web proxy built on
+	<a href="https://github.com/MercuryWorkshop/scramjet">Scramjet</a> — fast,
+	self-hosted, and designed to be easy to put online and keep online.
+</p>
 
-## Run it locally
+## Supported sites
+
+Vector works with most of the web, including:
+
+- Google
+- YouTube
+- Discord
+- Reddit
+- Spotify
+- Twitter / X
+- Instagram
+- GitHub
+
+## Hosting a link
+
+### Local
 
 ```bash
+git clone https://github.com/Edenfromsweden/Vector
+cd Vector
 npm install
-npm start        # http://localhost:8080
+npm start
 ```
 
-Open it in real Chrome (not an embedded webview), type a URL, press Enter.
+Then open <http://localhost:8080> in real Chrome (not an embedded webview).
 
-## Deploy it
+### Web (Cloudflare)
+
+Vector runs on your own Cloudflare account. Deploy the front end with:
 
 ```bash
 npm run deploy:site
 ```
 
-Deploys the front end to your Cloudflare Worker. Each hostname in
-`vector-site/wrangler.toml` is a working link; add a line and redeploy for
-another. Full guide in [`DEPLOY.md`](DEPLOY.md).
+Every hostname in `vector-site/wrangler.toml` becomes a working link — add a
+line and redeploy to mint another, so you always have a spare when one gets
+blocked. Full walkthrough, including the backend and fallbacks, in
+[`DEPLOY.md`](DEPLOY.md).
+
+<p align="center">
+	<a href="https://deploy.workers.cloudflare.com/?url=https://github.com/alpgul/worker-wisp-server">
+		<img src="https://deploy.workers.cloudflare.com/button" alt="Deploy the Wisp backend to Cloudflare">
+	</a>
+</p>
 
 ## Layout
 
