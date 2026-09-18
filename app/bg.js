@@ -13,7 +13,12 @@
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
 
-	let W, H, ribbons, parts, raf, running = true;
+	let W,
+		H,
+		ribbons,
+		parts,
+		raf,
+		running = true;
 	const pointer = { x: 0, y: 0, active: false };
 
 	const AUR = [

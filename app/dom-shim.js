@@ -33,26 +33,73 @@ window.xel = function (tag) {
 	var cE = document.createElement.bind(document);
 	var cENS = document.createElementNS.bind(document);
 
-	Object.defineProperty(document, "head", { get: function () { return root.querySelector("head"); }, configurable: true });
-	Object.defineProperty(document, "body", { get: function () { return root.querySelector("body"); }, configurable: true });
-	Object.defineProperty(document, "documentElement", { get: function () { return root; }, configurable: true });
-
-	document.createElement = function (t, o) { return typeof t === "string" ? cENS(XHTML, t, o) : cE(t, o); };
-	document.createElementNS = function (ns, n, o) { return (ns == null || ns === XHTML) ? cENS(XHTML, n, o) : cENS(ns, n, o); };
-
-	Object.defineProperty(document, "getElementById", {
-		value: function (id) { return root.querySelector('[id="' + String(id).replace(/["\\]/g, "\\$&") + '"]'); },
-		configurable: true, writable: true,
+	Object.defineProperty(document, "head", {
+		get: function () {
+			return root.querySelector("head");
+		},
+		configurable: true,
+	});
+	Object.defineProperty(document, "body", {
+		get: function () {
+			return root.querySelector("body");
+		},
+		configurable: true,
+	});
+	Object.defineProperty(document, "documentElement", {
+		get: function () {
+			return root;
+		},
+		configurable: true,
 	});
 
-	var qs = document.querySelector.bind(document), qsa = document.querySelectorAll.bind(document);
-	document.querySelector = function (s) { try { return root.querySelector(s) || qs(s); } catch (e) { return qs(s); } };
-	document.querySelectorAll = function (s) { try { var a = root.querySelectorAll(s); return a.length ? a : qsa(s); } catch (e) { return qsa(s); } };
-	document.getElementsByTagName = function (t) { return root.getElementsByTagNameNS(XHTML, t); };
-	document.getElementsByClassName = function (c) { return root.getElementsByClassName(c); };
+	document.createElement = function (t, o) {
+		return typeof t === "string" ? cENS(XHTML, t, o) : cE(t, o);
+	};
+	document.createElementNS = function (ns, n, o) {
+		return ns == null || ns === XHTML ? cENS(XHTML, n, o) : cENS(ns, n, o);
+	};
+
+	Object.defineProperty(document, "getElementById", {
+		value: function (id) {
+			return root.querySelector(
+				'[id="' + String(id).replace(/["\\]/g, "\\$&") + '"]'
+			);
+		},
+		configurable: true,
+		writable: true,
+	});
+
+	var qs = document.querySelector.bind(document),
+		qsa = document.querySelectorAll.bind(document);
+	document.querySelector = function (s) {
+		try {
+			return root.querySelector(s) || qs(s);
+		} catch (e) {
+			return qs(s);
+		}
+	};
+	document.querySelectorAll = function (s) {
+		try {
+			var a = root.querySelectorAll(s);
+			return a.length ? a : qsa(s);
+		} catch (e) {
+			return qsa(s);
+		}
+	};
+	document.getElementsByTagName = function (t) {
+		return root.getElementsByTagNameNS(XHTML, t);
+	};
+	document.getElementsByClassName = function (c) {
+		return root.getElementsByClassName(c);
+	};
 
 	if (navigator.userAgent.indexOf("Firefox") !== -1) {
-		try { Object.defineProperty(globalThis, "crossOriginIsolated", { value: true, writable: false }); } catch (e) {}
+		try {
+			Object.defineProperty(globalThis, "crossOriginIsolated", {
+				value: true,
+				writable: false,
+			});
+		} catch (e) {}
 	}
 })();
 
@@ -74,10 +121,14 @@ window.xel = function (tag) {
 
 	window.addEventListener("error", function (e) {
 		try {
-			var msg = find("sj-error"), code = find("sj-error-code");
-			if (msg && !msg.textContent) msg.textContent = "Vector hit an error while loading.";
+			var msg = find("sj-error"),
+				code = find("sj-error-code");
+			if (msg && !msg.textContent)
+				msg.textContent = "Vector hit an error while loading.";
 			if (code && !code.textContent) {
-				var where = e.filename ? " (" + String(e.filename).split("/").pop() + ":" + e.lineno + ")" : "";
+				var where = e.filename
+					? " (" + String(e.filename).split("/").pop() + ":" + e.lineno + ")"
+					: "";
 				code.textContent = (e.message || "script error") + where;
 			}
 		} catch (_) {}

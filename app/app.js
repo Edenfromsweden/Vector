@@ -19,7 +19,9 @@ const bodyEl =
 	document.body ||
 	(window.__vectorRoot && window.__vectorRoot.querySelector("body")) ||
 	(document.querySelector("foreignObject") &&
-		document.querySelector("foreignObject").firstElementChild.querySelector("body"));
+		document
+			.querySelector("foreignObject")
+			.firstElementChild.querySelector("body"));
 
 // The markup ships a "no JavaScript ran" banner. This file running at all
 // disproves that, so retract it here too rather than only in dom-shim.js.
@@ -63,7 +65,9 @@ const scramjet = new ScramjetController({
 
 scramjet.init();
 
-const connection = new BareMux.BareMuxConnection(engineURL("baremux/worker.js"));
+const connection = new BareMux.BareMuxConnection(
+	engineURL("baremux/worker.js")
+);
 const transportPath = engineURL("libcurl/index.mjs");
 
 let transportReady = false;
