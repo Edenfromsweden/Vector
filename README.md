@@ -1,5 +1,5 @@
 <p align="center">
-	<img src="https://raw.githubusercontent.com/Edenfromsweden/Vector/main/public/favicon.svg" height="120" alt="Vector">
+	<img src="assets/vector-logo.png" width="120" alt="Vector">
 </p>
 
 <h1 align="center">Vector</h1>
