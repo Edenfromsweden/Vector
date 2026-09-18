@@ -1,74 +1,97 @@
-<p align="center"><img src="https://raw.githubusercontent.com/MercuryWorkshop/scramjet/main/assets/scramjet.png" height="200"></p>
+<h1 align="center">Vector</h1>
 
-<h1 align="center">Scramjet Demo</h1>
+<p align="center">A straight line to the open web.</p>
 
-The demo implementation of <a href="https://github.com/MercuryWorkshop/scramjet">Scramjet</a>, the most advanced web proxy.
+Vector is a self-hosted web proxy front end built on
+[Scramjet](https://github.com/MercuryWorkshop/scramjet). You host it on your own
+Cloudflare account; it serves a small browser-style UI (address bar, tabs, a
+games grid) and routes pages through a Wisp WebSocket backend.
 
-<a href="https://github.com/MercuryWorkshop/scramjet">Scramjet</a> is an experimental interception based web proxy designed with security, developer friendliness, and performance in mind. This project is made to evade internet censorship and bypass arbitrary web browser restrictions.
+It is an educational project for learning how interception proxies, service
+workers, and request rewriting fit together. Run it on infrastructure you
+control and on networks where you are permitted to.
 
-#### Refer to <a href="https://github.com/HeyPuter/browser.js">browser.js</a> where this project will now receive updates outside of just bypassing internet censorship.
-
-## Supported Sites
-
-Scramjet has CAPTCHA support! Some of the popular websites that Scramjet supports include:
-
-- [Google](https://google.com)
-- [Twitter](https://twitter.com)
-- [Instagram](https://instagram.com)
-- [Youtube](https://youtube.com)
-- [Spotify](https://spotify.com)
-- [Discord](https://discord.com)
-- [Reddit](https://reddit.com)
-- [GeForce NOW](https://play.geforcenow.com/)
-
-Ensure you are not hosting on a datacenter IP for CAPTCHAs to work reliably along with YouTube. Heavy amounts of traffic will make some sites NOT work on a single IP. Consider rotating IPs or routing through Wireguard using a project like <a href="https://github.com/whyvl/wireproxy">wireproxy</a>.
-
-## Setup / Usage
-
-You will need Node.js 16.x (and above) and Git installed; below is an example for Debian/Ubuntu setup.
+## How it is put together
 
 ```
-sudo apt update
-sudo apt upgrade
-sudo apt install curl git nginx
-
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-nvm install 20
-nvm use 20
-
-git clone https://github.com/MercuryWorkshop/Scramjet-App
-cd Scramjet-App
+ ┌─────────── Cloudflare Worker (vector-site/) ───────────┐      ┌─── Wisp backend ───┐
+ │  serves the static build (dist/) with COOP/COEP        │      │  relays TCP over a │
+ │  the page + Scramjet service worker + WASM rewriter    │ ───▶ │  WebSocket via     │
+ │  reachable at v.zilkcz.com and sibling subdomains      │      │  connect()         │
+ └────────────────────────────────────────────────────────┘      └────────────────────┘
 ```
 
-Install dependencies
+- **Front end** — `public/` is the source of truth: the page, service worker,
+  and client scripts. `scripts/build-pages.mjs` builds it into `dist/` with the
+  vendored engine and the cross-origin-isolation headers Scramjet needs.
+- **CDN shells** — `app/` is the same UI packaged for static CDNs, generated
+  from `public/` by `scripts/build-svg-shell.mjs` (see `app/README.md`). Kept
+  for hosts that will not run a normal page; the Cloudflare deploy does not need
+  them.
+- **Backend** — a Wisp WebSocket server. `src/index.js` runs one for local dev;
+  `cf-worker/` is a Cloudflare Worker version. It cannot be a plain CDN.
 
+## Local development
+
+```bash
+npm install        # uses pnpm under the hood; if npm is blocked:
+                   #   npx pnpm@10.18.3 install
+npm start          # dev server on http://localhost:8080
 ```
-pnpm install
+
+Open it in real Chrome (not an embedded webview — service workers do not
+register in those), type a URL, press Enter. In dev the front end and Wisp run
+together, so `window.WISP_URL` in `public/wisp-config.js` stays `""`.
+
+## Deploying (Cloudflare)
+
+The front end and the Wisp backend deploy separately. Full walkthrough in
+[`DEPLOY.md`](DEPLOY.md); the short version:
+
+```bash
+npm run deploy:site    # build dist/ and deploy the Worker (front end)
 ```
 
-Run the server
+Every hostname listed in `vector-site/wrangler.toml` is served by that one
+Worker, so each is an independent link. Add a line, redeploy, and you have
+another. `DEPLOY.md` covers minting and retiring links, the workers.dev
+backstop, and a second-domain fallback.
 
+## Games
+
+`public/games/` holds standalone HTML games; `npm run games` regenerates
+`games.json` from whatever is in there. Clicking a game navigates to its file
+(it is not framed — the game hosts refuse embedding), and Back returns to
+Vector.
+
+## Checks
+
+```bash
+npm run lint
+npm install --no-save playwright && npx playwright install chromium
+npm run smoke      # loads every build in a headless browser and asserts it renders
 ```
-pnpm start
-```
 
-Resources for self-hosting:
+`npm run smoke` catches failures that unit tests miss — a control that is in the
+DOM but renders at zero size, a page that loads but runs no script, an overlay
+covering the app. CI (`.github/workflows/build.yml`) runs it and also checks
+`app/` is regenerated from `public/`.
 
-- https://github.com/nvm-sh/nvm
-- https://docs.titaniumnetwork.org/guides/nginx/
-- https://docs.titaniumnetwork.org/guides/vps-hosting/
-- https://docs.titaniumnetwork.org/guides/dns-setup/
+## Limits (what will not work, and why)
 
-### HTTP Transport
+- **Cloudflare-fronted sites** may fail: the Worker backend reaches the network
+  through `connect()`, which is restricted from connecting into Cloudflare's own
+  IP ranges. A non-Worker Wisp host avoids this.
+- **CAPTCHAs / "Just a moment…"** happen because TLS is terminated in-browser by
+  a WASM stack whose fingerprint does not match the browser, from datacenter IP
+  space. Hosting the Wisp server on a clean, non-datacenter IP helps.
+- **Static CDNs cannot host the front end.** jsDelivr and statically.io serve
+  pages as plain text or block their scripts (verified across `.html`, `.xhtml`,
+  and `.svg`); githack works but is easily blocked. A real web host — the
+  Cloudflare Worker here — is what actually runs it.
 
-The example uses [libcurl-transport](https://github.com/MercuryWorkshop/libcurl-transport) to fetch proxied data encrypted.
+## Credits & license
 
-You may also want to use [epoxy-transport](https://github.com/MercuryWorkshop/epoxy-transport), a different way of fetching encrypted data.
-
-This example also now uses [wisp-js/server](https://www.npmjs.com/package/@mercuryworkshop/wisp-js) instead of the now outdated wisp-server-node. Please note that this can also be replaced with other wisp implementations like [wisp-server-python](https://github.com/MercuryWorkshop/wisp-server-python) which is highly recommended for production.
-
-See the [bare-mux](https://github.com/MercuryWorkshop/bare-mux) documentation for more information.
+Built on [Scramjet](https://github.com/MercuryWorkshop/scramjet) and the Mercury
+Workshop toolchain (bare-mux, libcurl-transport, wisp-js). Licensed under the
+GNU AGPL — see [`LICENSE`](LICENSE).
