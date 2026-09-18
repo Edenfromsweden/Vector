@@ -72,10 +72,32 @@ const SVG_STYLE = `			<style>/*<![CDATA[*/
 const BOOT_WARN = `			<div id="boot-warn" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0b0817;color:#e9e4ff;font:16px/1.6 system-ui,sans-serif;text-align:center">
 				<div>
 					<strong style="display:block;font-size:20px;margin-bottom:8px">Vector couldn&#8217;t start</strong>
-					JavaScript did not run on this page.<br />
-					The host is likely blocking scripts, or the page was opened as an image rather than as a document.
+					<span id="boot-detail">The page&#8217;s scripts did not run.</span><br />
+					<span style="opacity:0.7;font-size:14px">If this is a CDN, try a URL pinned to a commit rather than a branch &#8212; a half-updated cache serves a new page with old scripts.</span>
 				</div>
 			</div>`;
+
+const BOOT_PROBE = `			<script>/*<![CDATA[*/
+				window.__vfail = [];
+				window.__vnote = function (s) { window.__vfail.push(s); };
+			/*]]>*/</script>`;
+
+// Runs after every other script. If the banner is still up, app.js never ran,
+// so say which files failed to load rather than guessing at the cause.
+const BOOT_REPORT = `			<script>/*<![CDATA[*/
+				(function () {
+					var fo = document.querySelector("foreignObject");
+					var root = fo && fo.firstElementChild;
+					var warn = root && root.querySelector('[id="boot-warn"]');
+					if (!warn || warn.style.display === "none") return;
+					var detail = root.querySelector('[id="boot-detail"]');
+					if (!detail) return;
+					var failed = window.__vfail || [];
+					detail.textContent = failed.length
+						? "These files did not load: " + failed.join(", ")
+						: "Scripts loaded but app.js did not start it. Check the console for an error.";
+				})();
+			/*]]>*/</script>`;
 
 // Engine and app scripts, in dependency order. The CDN build resolves the
 // vendored engine relative to the document rather than hardcoding a CDN host.
@@ -136,16 +158,25 @@ function build() {
 		.trim();
 
 	const head = [
-		'			<script src="dom-shim.js"></script>',
+		BOOT_PROBE,
+		`			<script src="dom-shim.js" onerror="__vnote('dom-shim.js')"></script>`,
 		"",
 		"			" + toXhtml(meta).split("\n").join("\n"),
 		'			<link rel="stylesheet" href="index.css" />',
 		SVG_STYLE,
 	].join("\n");
 
-	const scripts = SCRIPTS.map((s) => `			<script src="${s}"></script>`).join("\n");
+	const scripts = SCRIPTS.map(
+		(s) =>
+			`			<script src="${s}" onerror="__vnote('${s.split("/").pop()}')"></script>`
+	).join("\n");
 
-	const body = [BOOT_WARN, toXhtml(bodyInner).trimEnd(), scripts].join("\n");
+	const body = [
+		BOOT_WARN,
+		toXhtml(bodyInner).trimEnd(),
+		scripts,
+		BOOT_REPORT,
+	].join("\n");
 
 	const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
 	<foreignObject width="100%" height="100%">

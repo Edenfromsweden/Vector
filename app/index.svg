@@ -2,7 +2,11 @@
 	<foreignObject width="100%" height="100%">
 		<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 			<head>
-			<script src="dom-shim.js"></script>
+			<script>/*<![CDATA[*/
+				window.__vfail = [];
+				window.__vnote = function (s) { window.__vfail.push(s); };
+			/*]]>*/</script>
+			<script src="dom-shim.js" onerror="__vnote('dom-shim.js')"></script>
 
 			<meta charset="utf-8" />
 		<meta
@@ -42,8 +46,8 @@
 			<div id="boot-warn" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0b0817;color:#e9e4ff;font:16px/1.6 system-ui,sans-serif;text-align:center">
 				<div>
 					<strong style="display:block;font-size:20px;margin-bottom:8px">Vector couldn&#8217;t start</strong>
-					JavaScript did not run on this page.<br />
-					The host is likely blocking scripts, or the page was opened as an image rather than as a document.
+					<span id="boot-detail">The page&#8217;s scripts did not run.</span><br />
+					<span style="opacity:0.7;font-size:14px">If this is a CDN, try a URL pinned to a commit rather than a branch &#8212; a half-updated cache serves a new page with old scripts.</span>
 				</div>
 			</div>
 
@@ -240,14 +244,28 @@
 			</div>
 		</div>
 		<div id="vframes" aria-hidden="true"></div>
-			<script src="../cdn/scram/scramjet.all.js"></script>
-			<script src="../cdn/baremux/index.js"></script>
-			<script src="wisp-config.js"></script>
-			<script src="register-sw.js"></script>
-			<script src="search.js"></script>
-			<script src="app.js"></script>
-			<script src="bg.js"></script>
-			<script src="games.js"></script>
+			<script src="../cdn/scram/scramjet.all.js" onerror="__vnote('scramjet.all.js')"></script>
+			<script src="../cdn/baremux/index.js" onerror="__vnote('index.js')"></script>
+			<script src="wisp-config.js" onerror="__vnote('wisp-config.js')"></script>
+			<script src="register-sw.js" onerror="__vnote('register-sw.js')"></script>
+			<script src="search.js" onerror="__vnote('search.js')"></script>
+			<script src="app.js" onerror="__vnote('app.js')"></script>
+			<script src="bg.js" onerror="__vnote('bg.js')"></script>
+			<script src="games.js" onerror="__vnote('games.js')"></script>
+			<script>/*<![CDATA[*/
+				(function () {
+					var fo = document.querySelector("foreignObject");
+					var root = fo && fo.firstElementChild;
+					var warn = root && root.querySelector('[id="boot-warn"]');
+					if (!warn || warn.style.display === "none") return;
+					var detail = root.querySelector('[id="boot-detail"]');
+					if (!detail) return;
+					var failed = window.__vfail || [];
+					detail.textContent = failed.length
+						? "These files did not load: " + failed.join(", ")
+						: "Scripts loaded but app.js did not start it. Check the console for an error.";
+				})();
+			/*]]>*/</script>
 			</body>
 		</html>
 	</foreignObject>
