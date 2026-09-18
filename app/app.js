@@ -9,6 +9,28 @@ const here = new URL("./", location.href); // .../<repo>@main/app/
 const prefix = new URL("./service/", here).pathname; // under the SW scope
 const engineURL = (p) => new URL("../cdn/" + p, here).href;
 
+const xel =
+	window.xel ||
+	((t) => document.createElementNS("http://www.w3.org/1999/xhtml", t));
+
+// document.body is undefined in an SVG document unless dom-shim.js patched it;
+// resolve it directly so a missing shim degrades instead of throwing.
+const bodyEl =
+	document.body ||
+	(window.__vectorRoot && window.__vectorRoot.querySelector("body")) ||
+	(document.querySelector("foreignObject") &&
+		document.querySelector("foreignObject").firstElementChild.querySelector("body"));
+
+// The markup ships a "no JavaScript ran" banner. This file running at all
+// disproves that, so retract it here too rather than only in dom-shim.js.
+(function () {
+	const root =
+		window.__vectorRoot ||
+		(document.querySelector("foreignObject") || {}).firstElementChild;
+	const warn = root && root.querySelector('[id="boot-warn"]');
+	if (warn) warn.setAttribute("hidden", "hidden");
+})();
+
 /* ---- landing page elements ---- */
 const form = document.getElementById("sj-form");
 const address = document.getElementById("sj-address");
@@ -67,7 +89,7 @@ let active = null;
 function setChrome(on) {
 	bar.classList.toggle("show", on);
 	framesEl.classList.toggle("show", on);
-	document.body.classList.toggle("proxying", on);
+	if (bodyEl) bodyEl.classList.toggle("proxying", on);
 	bar.setAttribute("aria-hidden", on ? "false" : "true");
 	framesEl.setAttribute("aria-hidden", on ? "false" : "true");
 }
@@ -84,15 +106,15 @@ function labelFor(url) {
 function renderTabs() {
 	tabsEl.textContent = "";
 	for (const tab of tabs) {
-		const btn = document.createElement("button");
+		const btn = xel("button");
 		btn.className = "vtab" + (tab === active ? " active" : "");
 		btn.title = tab.url || "New Tab";
 
-		const label = document.createElement("span");
+		const label = xel("span");
 		label.className = "vtab-label";
 		label.textContent = labelFor(tab.url);
 
-		const close = document.createElement("span");
+		const close = xel("span");
 		close.className = "vtab-close";
 		close.textContent = "×";
 		close.setAttribute("role", "button");
@@ -117,7 +139,7 @@ function activateTab(tab) {
 }
 
 function openTab(url) {
-	const iframe = document.createElement("iframe");
+	const iframe = xel("iframe");
 	iframe.className = "vframe";
 	iframe.setAttribute("allow", "fullscreen; clipboard-read; clipboard-write");
 

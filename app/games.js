@@ -3,6 +3,10 @@
 /* Games section: reads games.json, renders a grid, plays games in an overlay,
  * lets you download a game's HTML, and stores favorites in a cookie. */
 (function () {
+	const xel =
+		window.xel ||
+		((t) => document.createElementNS("http://www.w3.org/1999/xhtml", t));
+
 	const grid = document.getElementById("games-grid");
 	const empty = document.getElementById("games-empty");
 	const panel = document.getElementById("games");
@@ -71,17 +75,17 @@
 		if (empty) empty.hidden = true;
 
 		for (const g of sorted) {
-			const card = document.createElement("div");
+			const card = xel("div");
 			card.className = "game-card";
 
-			const play = document.createElement("button");
+			const play = xel("button");
 			play.className = "game-play";
 			play.title = "Play " + g.name;
 
-			const cover = document.createElement("span");
+			const cover = xel("span");
 			cover.className = "game-cover";
 			if (g.icon) {
-				const img = document.createElement("img");
+				const img = xel("img");
 				img.className = "game-cover-img";
 				img.loading = "lazy";
 				img.alt = "";
@@ -96,17 +100,17 @@
 				cover.classList.add("noimg");
 			}
 
-			const nameEl = document.createElement("span");
+			const nameEl = xel("span");
 			nameEl.className = "game-name";
 			nameEl.textContent = g.name;
 
 			play.append(cover, nameEl);
 			play.addEventListener("click", () => openGame(g));
 
-			const actions = document.createElement("div");
+			const actions = xel("div");
 			actions.className = "game-actions";
 
-			const fav = document.createElement("button");
+			const fav = xel("button");
 			fav.className = "game-fav" + (isFav(g.id) ? " on" : "");
 			fav.textContent = isFav(g.id) ? STAR : STAR_O;
 			fav.title = "Favorite";
@@ -117,7 +121,7 @@
 				render();
 			});
 
-			const dl = document.createElement("a");
+			const dl = xel("a");
 			dl.className = "game-dl";
 			dl.textContent = "⤓"; // ⤓
 			dl.title = "Download HTML";

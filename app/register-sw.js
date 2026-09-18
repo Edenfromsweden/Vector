@@ -22,4 +22,19 @@ async function registerSW() {
 	}
 
 	await navigator.serviceWorker.register(stockSW);
+	// register() resolves once the registration exists, not once the worker
+	// controls this scope. Navigating before that leaves the first request
+	// unintercepted, which reads as a blank frame. serviceWorker.ready waits for
+	// control, but never rejects -- so bound it, or a worker that never activates
+	// hangs the caller forever and looks like the very silent failure we are
+	// trying to remove.
+	await Promise.race([
+		navigator.serviceWorker.ready,
+		new Promise((_, reject) =>
+			setTimeout(
+				() => reject(new Error("Service worker did not activate in time.")),
+				10000
+			)
+		),
+	]);
 }
