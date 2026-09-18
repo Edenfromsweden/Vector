@@ -9,7 +9,14 @@
 // entities only, boolean attributes spelled out, and an explicit namespace on
 // every nested <svg>. Run: npm run build:svg
 
-import { readFileSync, writeFileSync, copyFileSync, mkdirSync } from "node:fs";
+import {
+	readFileSync,
+	writeFileSync,
+	copyFileSync,
+	mkdirSync,
+	rmSync,
+	cpSync,
+} from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -99,11 +106,13 @@ const BOOT_REPORT = `			<script>/*<![CDATA[*/
 				})();
 			/*]]>*/</script>`;
 
-// Engine and app scripts, in dependency order. The CDN build resolves the
-// vendored engine relative to the document rather than hardcoding a CDN host.
+// Engine and app scripts, in dependency order. The engine is vendored under
+// app/cdn/ and referenced relative to this folder (no leading "/", no "../"),
+// so it resolves whether the host serves the whole repo (jsDelivr: .../app/)
+// or roots the site at this folder (Cloudflare Pages: /).
 const SCRIPTS = [
-	"../cdn/scram/scramjet.all.js",
-	"../cdn/baremux/index.js",
+	"cdn/scram/scramjet.all.js",
+	"cdn/baremux/index.js",
 	"wisp-config.js",
 	"register-sw.js",
 	"search.js",
@@ -272,6 +281,19 @@ ${BOOT_REPORT.replace(/^\t{3}/gm, "\t\t")}
 		copyFileSync(`${src}/${f}`, `${out}/${f}`);
 	}
 	console.log(`Copied ${SHARED.length} shared files public/ -> app/`);
+
+	// Vendor the engine INTO app/ so the shell is self-contained. app/ is served
+	// at the site root on a real host (Cloudflare Pages), where "../cdn" would
+	// escape the root and 404; a copy under app/cdn/ that the shell references
+	// relatively resolves on both a repo-rooted CDN and a folder-rooted host.
+	rmSync(`${out}/cdn`, { recursive: true, force: true });
+	cpSync(`${root}cdn`, `${out}/cdn`, {
+		recursive: true,
+		// Skip sourcemaps and type defs: never executed, and leaving them out
+		// keeps the copy small and Direct-Upload-safe (as build-pages does for dist).
+		filter: (s) => !/\.(map|d\.ts|ts)$/.test(s),
+	});
+	console.log("Vendored engine cdn/ -> app/cdn/ (self-contained shell)");
 	console.log("Left app-specific: app.js, sw.js, dom-shim.js, games.json");
 }
 

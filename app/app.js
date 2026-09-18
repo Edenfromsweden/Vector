@@ -1,13 +1,15 @@
 "use strict";
 
-/* Proxy + tab-bar logic for the jsDelivr-hosted SVG shell.
- * The page is on cdn.jsdelivr.net, so engine / bare-mux worker / libcurl /
- * sw.js are all same-origin under the repo path. The Scramjet route prefix is
- * computed to sit INSIDE the service-worker scope (this directory). */
+/* Proxy + tab-bar logic for the CDN / static-host shell.
+ * Everything the proxy needs -- engine, bare-mux worker, libcurl, sw.js -- is
+ * vendored under this directory (app/cdn/) and referenced RELATIVE to it, with
+ * no leading "/" and no "../". That resolves the same whether the host serves
+ * the whole repo (jsDelivr: .../app/) or roots the site at this folder
+ * (Cloudflare Pages: /). The Scramjet route prefix sits INSIDE the SW scope. */
 
-const here = new URL("./", location.href); // .../<repo>@main/app/
+const here = new URL("./", location.href); // the folder this document lives in
 const prefix = new URL("./service/", here).pathname; // under the SW scope
-const engineURL = (p) => new URL("../cdn/" + p, here).href;
+const engineURL = (p) => new URL("cdn/" + p, here).href;
 
 const xel =
 	window.xel ||

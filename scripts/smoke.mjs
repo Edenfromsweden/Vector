@@ -183,6 +183,10 @@ async function main() {
 	const CDN_PREFIX = "/gh/owner/repo@main";
 	const appSrv = serve(["."], CDN_PREFIX).listen(8801);
 	const pubSrv = serve(["public", "cdn"]).listen(8802);
+	// A real host (Cloudflare Pages) roots the site at app/, not at the repo, so
+	// "../cdn" would escape the root. Serve app/ as the site root to prove the
+	// vendored app/cdn/ engine resolves there the way it does on a CDN.
+	const pagesSrv = serve(["app"]).listen(8803);
 
 	let browser;
 	try {
@@ -199,6 +203,7 @@ async function main() {
 		);
 		appSrv.close();
 		pubSrv.close();
+		pagesSrv.close();
 		process.exit(0);
 	}
 
@@ -224,6 +229,7 @@ async function main() {
 			true,
 		],
 		["public/index.html (Worker build)", "http://localhost:8802/", false],
+		["app/ served at site root (Pages)", "http://localhost:8803/", false],
 	];
 
 	let ok = true;
@@ -247,6 +253,7 @@ async function main() {
 	await browser.close();
 	appSrv.close();
 	pubSrv.close();
+	pagesSrv.close();
 
 	console.log(ok ? "\nAll render checks passed." : "\nRender checks FAILED.");
 	process.exit(ok ? 0 : 1);
