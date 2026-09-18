@@ -204,8 +204,16 @@ If the proxy loads the "blocked" site, you've demonstrated the real evasion mech
 
 ## Honest limits (what won't work, and why)
 
+- **Can't reach Cloudflare-hosted sites** — a Worker's `connect()` refuses to open a
+  socket to Cloudflare's own IP ranges (loop prevention), so any Cloudflare-fronted
+  target returns a network error. That includes **Discord**, **Twitter / X**, and
+  `example.com` (now on Cloudflare). Sites on their own infra (Google, YouTube, Reddit,
+  GitHub, Wikipedia, …) work. This is the single biggest limit of a Worker backend, and
+  the only fix is to run the Wisp server off Cloudflare — a small `wisp-js` Node server
+  on any host, reverse-proxied behind your domain — which does normal OS-level TCP with
+  no such restriction.
 - **No UDP** (Cloudflare `connect()` is TCP-only) → **Discord voice / any WebRTC is
-  impossible**. Discord text/login can work.
+  impossible** (and Discord is unreachable anyway, see above).
 - **6 concurrent outbound TCP sockets per Wisp connection** (Cloudflare-wide, all plans)
   → heavy sites that open many parallel connections queue and feel slow.
 - **Free CPU budget 10 ms/request** (I/O-bound relay, fine for browsing; sustained bulk
