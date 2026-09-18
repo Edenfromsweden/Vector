@@ -5,11 +5,20 @@
  * Optimized for low-end hardware: no per-frame blur filter, 1x canvas
  * resolution, and pre-baked glow sprites. Pauses when the tab is hidden. */
 (function () {
+	const xel =
+		window.xel ||
+		((t) => document.createElementNS("http://www.w3.org/1999/xhtml", t));
+
 	const canvas = document.getElementById("bg");
 	if (!canvas) return;
 	const ctx = canvas.getContext("2d");
 
-	let W, H, ribbons, parts, raf, running = true;
+	let W,
+		H,
+		ribbons,
+		parts,
+		raf,
+		running = true;
 	const pointer = { x: 0, y: 0, active: false };
 
 	const AUR = [
@@ -24,7 +33,7 @@
 	// cheaper than building a gradient every frame).
 	const SPRITE = 64;
 	const glows = AUR.map((rgb) => {
-		const c = document.createElement("canvas");
+		const c = xel("canvas");
 		c.width = c.height = SPRITE;
 		const g = c.getContext("2d");
 		const grad = g.createRadialGradient(
