@@ -1,0 +1,57 @@
+# Guards the two things that are easy to get silently wrong in this repo:
+#
+#  1. app/ is generated from public/. Editing public/ without running
+#     `npm run build:svg` leaves the CDN build stale, which is exactly the
+#     drift that made the two frontends diverge in the first place.
+#  2. The shells render as HTML. app/index.svg is an SVG document, so a node
+#     built in the wrong namespace attaches fine, throws nothing, and renders
+#     at zero size. Only a real browser measuring layout catches that.
+
+name: Build
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  generated-in-sync:
+    name: app/ matches public/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Regenerate app/ from public/
+        run: npm run build:svg
+
+      - name: Fail if app/ was stale
+        run: |
+          if ! git diff --exit-code -- app/; then
+            echo ""
+            echo "app/ is out of date with public/."
+            echo "Edit public/, then run: npm run build:svg"
+            exit 1
+          fi
+
+  render:
+    name: Render checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Installed ad-hoc rather than added to dependencies: the smoke test is
+      # the only thing that needs a browser, and it skips cleanly without one.
+      - name: Install browser
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+
+      - name: Run render checks
+        run: npm run smoke

@@ -201,7 +201,9 @@
 				<button class="vbtn vnew" id="vnewtab" title="New tab">+</button>
 			</div>
 			<div class="vrow vrow-tools">
-				<button class="vbtn" id="vback" title="Back" aria-label="Back">‹</button>
+				<button class="vbtn" id="vback" title="Back" aria-label="Back">
+					‹
+				</button>
 				<button class="vbtn" id="vfwd" title="Forward" aria-label="Forward">
 					›
 				</button>

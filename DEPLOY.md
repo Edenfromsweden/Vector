@@ -22,6 +22,32 @@ Two halves (this is the whole lesson):
 Cloudflare is the host because a domain-category filter can't blocklist Cloudflare
 wholesale the way it blocks Render/Fly/Koyeb.
 
+## Two frontends, one source
+
+`public/` is the source of truth. `app/` is the same UI packaged as a single
+SVG document, for CDNs that will not serve HTML, and is **generated**:
+
+```bash
+npm run build:svg      # public/ -> app/
+```
+
+Edit `public/`, never `app/` (see `app/README.md` for the few hand-maintained
+exceptions). CI regenerates and fails if `app/` was left stale.
+
+## Render checks
+
+```bash
+npm install --no-save playwright
+npx playwright install chromium
+npm run smoke
+```
+
+Loads both builds in a headless browser and asserts the games grid and the
+proxy iframe actually render at non-zero size. This catches a failure mode
+nothing else does: `app/index.svg` is an XML document, so a node created in the
+wrong namespace attaches to the DOM, throws no error, and renders nothing at
+all. The page looks fine and every button does nothing.
+
 ## Local dev (verified working)
 
 ```bash
@@ -40,7 +66,7 @@ together on :8080, so `window.WISP_URL` stays "".
 
 Easiest (no local tooling): open the one-click deploy and sign into Cloudflare:
 
-  https://deploy.workers.cloudflare.com/?url=https://github.com/alpgul/worker-wisp-server
+https://deploy.workers.cloudflare.com/?url=https://github.com/alpgul/worker-wisp-server
 
 Or from `cf-worker/` with wrangler (**needs Node.js 22+**; this machine has 20):
 
@@ -50,7 +76,7 @@ npx wrangler login        # OAuth in browser
 npx wrangler deploy
 ```
 
-Your Wisp endpoint is then:  `wss://wisp-worker.<your-subdomain>.workers.dev/`
+Your Wisp endpoint is then: `wss://wisp-worker.<your-subdomain>.workers.dev/`
 (the trailing slash matters).
 
 ### 2. Point the frontend at the Worker
@@ -72,7 +98,7 @@ npm run build:pages      # produces dist/ (public + vendor assets + _headers)
 - **Dashboard route (no Node 22 needed):** push this repo to GitHub, then in the
   Cloudflare dashboard → Pages → connect the repo. Build command `npm run build:pages`,
   output directory `dist`.
-- **CLI route (needs Node 22+):** `npm run deploy:pages`  (wraps `wrangler pages deploy dist`).
+- **CLI route (needs Node 22+):** `npm run deploy:pages` (wraps `wrangler pages deploy dist`).
 
 The `dist/_headers` file sets the COOP/COEP headers Scramjet needs (cross-origin
 isolation for the WASM rewriter).

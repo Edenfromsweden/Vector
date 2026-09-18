@@ -1,6 +1,4 @@
-importScripts(
-	"https://cdn.jsdelivr.net/gh/Edenfromsweden/Vector@main/cdn/scram/scramjet.all.js"
-);
+importScripts("/scram/scramjet.all.js");
 
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();

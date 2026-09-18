@@ -22,9 +22,9 @@ const { ScramjetController } = $scramjetLoadController();
 
 const scramjet = new ScramjetController({
 	files: {
-		wasm: "https://cdn.jsdelivr.net/gh/Edenfromsweden/Vector@main/cdn/scram/scramjet.wasm.wasm",
-		all: "https://cdn.jsdelivr.net/gh/Edenfromsweden/Vector@main/cdn/scram/scramjet.all.js",
-		sync: "https://cdn.jsdelivr.net/gh/Edenfromsweden/Vector@main/cdn/scram/scramjet.sync.js",
+		wasm: "/scram/scramjet.wasm.wasm",
+		all: "/scram/scramjet.all.js",
+		sync: "/scram/scramjet.sync.js",
 	},
 	// Sites like Discord register their own service worker inside the frame;
 	// this enables Scramjet's nested-service-worker support.
