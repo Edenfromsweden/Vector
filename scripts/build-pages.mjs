@@ -5,6 +5,7 @@
 // copy them into dist/ alongside public/, and emit the COOP/COEP headers Scramjet
 // needs (crossOriginIsolated -> SharedArrayBuffer/WASM threads).
 import {
+	readdirSync,
 	rmSync,
 	mkdirSync,
 	cpSync,
@@ -61,6 +62,27 @@ for (const [src, name] of vendor) {
   console.log(`Copying ${name} vendor assets -> dist/${name}/`);
   cpSync(src, `${dist}/${name}`, { recursive: true });
 }
+
+// Cloudflare Pages Direct Upload rejects a folder that contains .ts files
+// ("requires a build process"). The vendored engines ship .d.ts declarations,
+// source maps, and a scram/types/ tree -- none of which the browser runs.
+// Strip them so the build is a pure static bundle that Direct Upload accepts.
+function pruneNonRuntime(dir) {
+	for (const entry of readdirSync(dir, { withFileTypes: true })) {
+		const full = `${dir}/${entry.name}`;
+		if (entry.isDirectory()) {
+			if (entry.name === "types") {
+				rmSync(full, { recursive: true, force: true });
+			} else {
+				pruneNonRuntime(full);
+			}
+		} else if (/\.(ts|map)$/.test(entry.name)) {
+			rmSync(full, { force: true });
+		}
+	}
+}
+pruneNonRuntime(dist);
+console.log("Pruned .ts / .map / types from dist/ (Direct-Upload safe)");
 
 // Cloudflare Pages _headers: cross-origin isolation on every route, and
 // no-cache on the app shell so a redeploy is never shadowed by stale HTML/CSS/JS
