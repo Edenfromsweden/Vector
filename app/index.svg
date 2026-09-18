@@ -2,26 +2,7 @@
 	<foreignObject width="100%" height="100%">
 		<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 			<head>
-				<script>/*<![CDATA[*/
-				(function () {
-					var XHTML = "http://www.w3.org/1999/xhtml";
-					var root = document.querySelector("foreignObject").firstElementChild;
-					var cE = document.createElement.bind(document);
-					var cENS = document.createElementNS.bind(document);
-					Object.defineProperty(document, "head", { get: function () { return root.querySelector("head"); }, configurable: true });
-					Object.defineProperty(document, "body", { get: function () { return root.querySelector("body"); }, configurable: true });
-					Object.defineProperty(document, "documentElement", { get: function () { return root; }, configurable: true });
-					document.createElement = function (t, o) { return typeof t === "string" ? cENS(XHTML, t, o) : cE(t, o); };
-					document.createElementNS = function (ns, n, o) { return (ns == null || ns === XHTML) ? cENS(XHTML, n, o) : cENS(ns, n, o); };
-					Object.defineProperty(document, "getElementById", { value: function (id) { return root.querySelector('[id="' + String(id).replace(/["\\]/g, "\\$&") + '"]'); }, configurable: true, writable: true });
-					var qs = document.querySelector.bind(document), qsa = document.querySelectorAll.bind(document);
-					document.querySelector = function (s) { try { return root.querySelector(s) || qs(s); } catch (e) { return qs(s); } };
-					document.querySelectorAll = function (s) { try { var a = root.querySelectorAll(s); return a.length ? a : qsa(s); } catch (e) { return qsa(s); } };
-					document.getElementsByTagName = function (t) { return root.getElementsByTagNameNS(XHTML, t); };
-					document.getElementsByClassName = function (c) { return root.getElementsByClassName(c); };
-					if (navigator.userAgent.indexOf("Firefox") !== -1) { try { Object.defineProperty(globalThis, "crossOriginIsolated", { value: true, writable: false }); } catch (e) {} }
-				})();
-				/*]]>*/</script>
+				<script src="dom-shim.js"></script>
 
 				<meta charset="UTF-8" />
 				<meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no" />
@@ -37,6 +18,13 @@
 			</head>
 
 			<body>
+				<div id="boot-warn" style="position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;padding:24px;background:#0b0817;color:#e9e4ff;font:16px/1.6 system-ui,sans-serif;text-align:center">
+					<div>
+						<strong style="display:block;font-size:20px;margin-bottom:8px">Vector couldn&#8217;t start</strong>
+						JavaScript did not run on this page.<br />
+						The host is likely blocking scripts, or the page was opened as an image rather than as a document.
+					</div>
+				</div>
 				<canvas id="bg" aria-hidden="true"></canvas>
 
 				<main class="hero">
