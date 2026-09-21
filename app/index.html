@@ -208,6 +208,29 @@
 			</div>
 		</div>
 		<div id="vframes" aria-hidden="true"></div>
+
+		<!-- Fullscreen game player. The iframe is `credentialless` so it can be
+		     embedded in this cross-origin-isolated shell and still load a game
+		     that pulls third-party assets. A plain iframe is blocked here. -->
+		<div id="game-view" aria-hidden="true">
+			<div class="gv-bar">
+				<button class="vbtn" id="gv-back" title="Back" aria-label="Back">
+					&lsaquo;
+				</button>
+				<span id="gv-title" class="gv-title"></span>
+				<button class="vbtn" id="gv-fav" title="Favorite" aria-pressed="false">
+					&#9734;
+				</button>
+				<a class="vbtn" id="gv-dl" title="Download HTML" download>&#10515;</a>
+			</div>
+			<iframe
+				id="gv-frame"
+				title="Game"
+				credentialless
+				allow="fullscreen; autoplay; gamepad; clipboard-read; clipboard-write"
+				allowfullscreen
+			></iframe>
+		</div>
 		<script src="cdn/scram/scramjet.all.js" onerror="__vnote('scramjet.all.js')"></script>
 		<script src="cdn/baremux/index.js" onerror="__vnote('index.js')"></script>
 		<script src="wisp-config.js" onerror="__vnote('wisp-config.js')"></script>

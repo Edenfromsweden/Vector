@@ -140,8 +140,17 @@ function toXhtml(html) {
 	}
 
 	// 3. boolean attributes need a value in XML
-	s = s.replace(/\shidden(?=[\s>])/g, ' hidden="hidden"');
-	s = s.replace(/\sdownload(?=[\s>])/g, ' download="download"');
+	for (const attr of [
+		"hidden",
+		"download",
+		"credentialless",
+		"allowfullscreen",
+	]) {
+		s = s.replace(
+			new RegExp(`\\s${attr}(?=[\\s>])`, "g"),
+			` ${attr}="${attr}"`
+		);
+	}
 
 	// 4. a nested <svg> inherits the XHTML namespace unless it declares its own
 	s = s.replace(

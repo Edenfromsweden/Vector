@@ -1,11 +1,11 @@
 "use strict";
 
-/* Games section: reads games.json, renders a grid, opens a game by navigating
- * to its HTML file, lets you download it, and stores favorites in a cookie.
+/* Games section: reads games.json, renders a grid, plays games in an overlay,
+ * lets you download a game's HTML, and stores favorites in a cookie.
  *
- * Games are NOT framed. The host serving them refuses to be embedded, so an
- * iframe just shows "refused to connect"; navigating to the file avoids the
- * framing headers entirely. Back returns here. */
+ * The player iframe (#gv-frame) is `credentialless`, which is what lets it be
+ * embedded in the cross-origin-isolated shell and still load a game that pulls
+ * third-party assets. A plain iframe is blocked here (COEP). */
 (function () {
 	const xel =
 		window.xel ||
@@ -16,6 +16,13 @@
 	const panel = document.getElementById("games");
 	const openBtn = document.getElementById("open-games");
 	const closeBtn = document.getElementById("games-close");
+
+	const view = document.getElementById("game-view");
+	const frame = document.getElementById("gv-frame");
+	const vTitle = document.getElementById("gv-title");
+	const vBack = document.getElementById("gv-back");
+	const vFav = document.getElementById("gv-fav");
+	const vDl = document.getElementById("gv-dl");
 
 	if (!grid) return;
 
@@ -132,18 +139,31 @@
 	}
 
 	function openGame(g) {
-		if (!g || !g.file) return;
-		// Open the game in the standalone viewer (games/play.html), which carries
-		// the back/favorite/download bar and frames the game. The viewer is not
-		// cross-origin-isolated, so -- unlike the app shell -- it can embed a game
-		// that loads third-party assets. Navigate to it rather than framing it
-		// here.
-		const params = new URLSearchParams({
-			src: g.file,
-			name: g.name || "Game",
-			id: g.id || "",
-		});
-		window.location.href = "games/play.html?" + params.toString();
+		if (!view) return;
+		frame.src = g.file;
+		vTitle.textContent = g.name;
+		vDl.href = g.file;
+		vDl.download = fileName(g.file);
+		syncViewFav(g);
+		vFav.onclick = () => {
+			toggleFav(g.id);
+			syncViewFav(g);
+			render();
+		};
+		view.classList.add("show");
+		view.setAttribute("aria-hidden", "false");
+	}
+	function syncViewFav(g) {
+		const on = isFav(g.id);
+		vFav.textContent = on ? STAR : STAR_O;
+		vFav.classList.toggle("on", on);
+		vFav.setAttribute("aria-pressed", on ? "true" : "false");
+	}
+	function closeGame() {
+		if (!view) return;
+		view.classList.remove("show");
+		view.setAttribute("aria-hidden", "true");
+		frame.src = "about:blank";
 	}
 
 	if (openBtn)
@@ -157,6 +177,7 @@
 			panel.classList.remove("show");
 			panel.setAttribute("aria-hidden", "true");
 		});
+	if (vBack) vBack.addEventListener("click", closeGame);
 
 	fetch("games.json", { cache: "no-store" })
 		.then((r) => (r.ok ? r.json() : []))
