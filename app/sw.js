@@ -1,7 +1,7 @@
-// Service worker for the jsDelivr-hosted shell. Same-origin (cdn.jsdelivr.net),
-// scoped to this repo directory. Imports the Scramjet engine from the same
-// origin and routes proxied requests through it.
-importScripts("cdn/scram/scramjet.all.js");
+// Service worker for the static shell. Imports the engine from this directory
+// (vendored under app/cdn/ with neutral names) and routes proxied requests
+// through it. The import path must match the copy map in build-svg-shell.mjs.
+importScripts("cdn/core/core.js");
 
 const { ScramjetServiceWorker } = $scramjetLoadWorker();
 const scramjet = new ScramjetServiceWorker();

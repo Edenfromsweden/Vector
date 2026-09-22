@@ -15,7 +15,6 @@ import {
 	copyFileSync,
 	mkdirSync,
 	rmSync,
-	cpSync,
 } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -107,12 +106,13 @@ const BOOT_REPORT = `			<script>/*<![CDATA[*/
 			/*]]>*/</script>`;
 
 // Engine and app scripts, in dependency order. The engine is vendored under
-// app/cdn/ and referenced relative to this folder (no leading "/", no "../"),
-// so it resolves whether the host serves the whole repo (jsDelivr: .../app/)
-// or roots the site at this folder (Cloudflare Pages: /).
+// app/cdn/ with NEUTRAL names (see ENGINE below) so no request URL carries a
+// proxy fingerprint, and referenced relative to this folder (no leading "/",
+// no "../") so it resolves whether the host serves the whole repo (.../app/)
+// or roots the site at this folder (/).
 const SCRIPTS = [
-	"cdn/scram/scramjet.all.js",
-	"cdn/baremux/index.js",
+	"cdn/core/core.js",
+	"cdn/mux/mux.js",
 	"wisp-config.js",
 	"register-sw.js",
 	"search.js",
@@ -291,18 +291,29 @@ ${BOOT_REPORT.replace(/^\t{3}/gm, "\t\t")}
 	}
 	console.log(`Copied ${SHARED.length} shared files public/ -> app/`);
 
-	// Vendor the engine INTO app/ so the shell is self-contained. app/ is served
-	// at the site root on a real host (Cloudflare Pages), where "../cdn" would
-	// escape the root and 404; a copy under app/cdn/ that the shell references
-	// relatively resolves on both a repo-rooted CDN and a folder-rooted host.
+	// Vendor the engine INTO app/ under NEUTRAL names, so no request URL contains
+	// a proxy fingerprint like "scramjet" / "baremux" / "libcurl" that a URL
+	// filter could match. app/ is served at the site root on a real host, where
+	// "../cdn" would escape the root; a copy under app/cdn/ referenced relatively
+	// resolves on both a repo-rooted CDN and a folder-rooted host. Each engine
+	// file is self-contained (no sibling imports), so renaming is safe -- but the
+	// new names MUST match the paths in app.js (files/transport) and app/sw.js.
 	rmSync(`${out}/cdn`, { recursive: true, force: true });
-	cpSync(`${root}cdn`, `${out}/cdn`, {
-		recursive: true,
-		// Skip sourcemaps and type defs: never executed, and leaving them out
-		// keeps the copy small (sourcemaps/types are never fetched at runtime).
-		filter: (s) => !/\.(map|d\.ts|ts)$/.test(s),
-	});
-	console.log("Vendored engine cdn/ -> app/cdn/ (self-contained shell)");
+	const ENGINE = [
+		["scram/scramjet.all.js", "core/core.js"],
+		["scram/scramjet.wasm.wasm", "core/core.wasm"],
+		["scram/scramjet.sync.js", "core/sync.js"],
+		["baremux/index.js", "mux/mux.js"],
+		["baremux/worker.js", "mux/worker.js"],
+		["libcurl/index.mjs", "net/net.mjs"],
+	];
+	for (const [from, to] of ENGINE) {
+		mkdirSync(`${out}/cdn/${to.split("/")[0]}`, { recursive: true });
+		copyFileSync(`${root}cdn/${from}`, `${out}/cdn/${to}`);
+	}
+	console.log(
+		`Vendored engine cdn/ -> app/cdn/ under neutral names (${ENGINE.length} files)`
+	);
 	console.log("Left app-specific: app.js, sw.js, dom-shim.js, games.json");
 }
 

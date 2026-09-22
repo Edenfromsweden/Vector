@@ -8,7 +8,10 @@
  * (Cloudflare Pages: /). The Scramjet route prefix sits INSIDE the SW scope. */
 
 const here = new URL("./", location.href); // the folder this document lives in
-const prefix = new URL("./service/", here).pathname; // under the SW scope
+// A neutral route prefix (not "/service/" or "/scram/") so the proxy path
+// carries no recognizable proxy signature. Must sit inside the SW scope.
+const prefix = new URL("./view/", here).pathname;
+// Engine vendored under app/cdn/ with neutral names (see build-svg-shell.mjs).
 const engineURL = (p) => new URL("cdn/" + p, here).href;
 
 const xel =
@@ -65,9 +68,9 @@ const { ScramjetController } = $scramjetLoadController();
 const scramjet = new ScramjetController({
 	prefix,
 	files: {
-		wasm: engineURL("scram/scramjet.wasm.wasm"),
-		all: engineURL("scram/scramjet.all.js"),
-		sync: engineURL("scram/scramjet.sync.js"),
+		wasm: engineURL("core/core.wasm"),
+		all: engineURL("core/core.js"),
+		sync: engineURL("core/sync.js"),
 	},
 	flags: { serviceworkers: true },
 	// Obfuscate the proxied URL. The default codec is encodeURIComponent, which
@@ -95,10 +98,8 @@ const scramjet = new ScramjetController({
 
 scramjet.init();
 
-const connection = new BareMux.BareMuxConnection(
-	engineURL("baremux/worker.js")
-);
-const transportPath = engineURL("libcurl/index.mjs");
+const connection = new BareMux.BareMuxConnection(engineURL("mux/worker.js"));
+const transportPath = engineURL("net/net.mjs");
 
 let transportReady = false;
 async function ensureTransport() {
