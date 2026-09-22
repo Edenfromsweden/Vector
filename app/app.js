@@ -70,6 +70,27 @@ const scramjet = new ScramjetController({
 		sync: engineURL("scram/scramjet.sync.js"),
 	},
 	flags: { serviceworkers: true },
+	// Obfuscate the proxied URL. The default codec is encodeURIComponent, which
+	// leaves the target host readable in the path (/service/https://discord.com/…),
+	// so a URL-filtering extension matches it and shows its block page. base64url
+	// makes the path an opaque blob with no hostname in it. These functions are
+	// serialized and re-run inside the service worker, so they must be
+	// self-contained (no references to anything outside).
+	codec: {
+		encode: (str) => {
+			if (!str) return str;
+			return btoa(encodeURIComponent(str))
+				.replace(/=/g, "")
+				.replace(/\+/g, "-")
+				.replace(/\//g, "_");
+		},
+		decode: (str) => {
+			if (!str) return str;
+			str = str.replace(/-/g, "+").replace(/_/g, "/");
+			while (str.length % 4) str += "=";
+			return decodeURIComponent(atob(str));
+		},
+	},
 });
 
 scramjet.init();
