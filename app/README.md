@@ -31,7 +31,9 @@ Hand-maintained, because they genuinely differ per host:
 
 ## Note on parity
 
-`public/` is served by the Worker in `vector-site/`, which sets
-`Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy`. A plain CDN
-cannot set response headers, so this build is **not** cross-origin isolated and
-anything depending on `SharedArrayBuffer` will behave differently here.
+This `app/` folder is what the deployed `vector` Worker serves (assets-only, via
+the repo-root `wrangler.jsonc`). It sets no response headers, so it is **not**
+cross-origin isolated — anything depending on `SharedArrayBuffer` behaves
+differently than under `npm start`, whose dev server sends
+`Cross-Origin-Opener-Policy` / `Cross-Origin-Embedder-Policy`. Scramjet proxying
+does not need isolation, so this is fine in practice.

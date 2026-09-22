@@ -299,7 +299,7 @@ ${BOOT_REPORT.replace(/^\t{3}/gm, "\t\t")}
 	cpSync(`${root}cdn`, `${out}/cdn`, {
 		recursive: true,
 		// Skip sourcemaps and type defs: never executed, and leaving them out
-		// keeps the copy small and Direct-Upload-safe (as build-pages does for dist).
+		// keeps the copy small (sourcemaps/types are never fetched at runtime).
 		filter: (s) => !/\.(map|d\.ts|ts)$/.test(s),
 	});
 	console.log("Vendored engine cdn/ -> app/cdn/ (self-contained shell)");

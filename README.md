@@ -52,15 +52,19 @@ Then open <http://localhost:8080> in real Chrome (not an embedded webview).
 
 ### Web (Cloudflare)
 
-Vector runs on your own Cloudflare account. Deploy the front end with:
+Vector runs on your own Cloudflare account as a **Worker** that serves the
+`app/` folder. The Worker is connected to this GitHub repo, so every push to
+`main` rebuilds and redeploys automatically — the repo-root
+[`wrangler.jsonc`](wrangler.jsonc) tells it what to serve. To deploy by hand
+instead:
 
 ```bash
-npm run deploy:site
+npm run deploy
 ```
 
-Every hostname in `vector-site/wrangler.toml` becomes a working link — add a
-line and redeploy to mint another, so you always have a spare when one gets
-blocked. Full walkthrough, including the backend and fallbacks, in
+Add more links by attaching more custom domains to the Worker in the Cloudflare
+dashboard (plain, boring names last longer against a filter). Full walkthrough,
+including the Wisp backend and the switchable backend for Discord, in
 [`DEPLOY.md`](DEPLOY.md).
 
 <p align="center">

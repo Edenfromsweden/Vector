@@ -31,7 +31,7 @@ const TYPES = {
 };
 
 // Serves a build the way its host does: `bases` are tried in order, so the
-// public/ build picks up the vendored engine at /scram/ the way dist/ does.
+// public/ build picks up the vendored engine at /scram/ the way the dev server does.
 function serve(bases, prefix = "") {
 	return createServer((req, res) => {
 		let url = decodeURIComponent(req.url.split("?")[0]);
@@ -183,7 +183,7 @@ async function main() {
 	const CDN_PREFIX = "/gh/owner/repo@main";
 	const appSrv = serve(["."], CDN_PREFIX).listen(8801);
 	const pubSrv = serve(["public", "cdn"]).listen(8802);
-	// A real host (Cloudflare Pages) roots the site at app/, not at the repo, so
+	// A real host (the vector Cloudflare Worker) roots the site at app/, not at the repo, so
 	// "../cdn" would escape the root. Serve app/ as the site root to prove the
 	// vendored app/cdn/ engine resolves there the way it does on a CDN.
 	const pagesSrv = serve(["app"]).listen(8803);
@@ -229,7 +229,7 @@ async function main() {
 			true,
 		],
 		["public/index.html (Worker build)", "http://localhost:8802/", false],
-		["app/ served at site root (Pages)", "http://localhost:8803/", false],
+		["app/ served at site root (Worker)", "http://localhost:8803/", false],
 	];
 
 	let ok = true;
