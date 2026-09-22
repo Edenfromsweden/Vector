@@ -1,0 +1,19 @@
+{
+	// Root config for the Cloudflare Workers build connected to this repo
+	// (the one that serves v.zilkcz.com). The build runs `wrangler versions
+	// upload` at the repo root, so it needs a wrangler config HERE.
+	//
+	// This is an assets-only Worker: no script, it just serves the app/ folder
+	// as a static site. app/ is self-contained (engine vendored at app/cdn/,
+	// all paths relative), so it works served at the site root with no build
+	// step -- which fits this pipeline, which only runs `pnpm install`.
+	//
+	// IMPORTANT: "name" must match the Worker this repo is connected to in the
+	// Cloudflare dashboard (Workers & Pages -> your Worker -> name). If the
+	// deploy fails with a name/permission error, change it to that exact name.
+	"name": "vector",
+	"compatibility_date": "2025-01-01",
+	"assets": {
+		"directory": "./app"
+	}
+}
