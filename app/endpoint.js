@@ -5,7 +5,7 @@
  * The Wisp server is what actually opens the outbound connection, so it decides
  * which sites are reachable. Two options:
  *
- *  - "worker" (default): your Cloudflare Worker, wss://wisp.zilkcz.com/. It's on
+ *  - "worker" (default): your Cloudflare Worker, wss://relay.zilkcz.com/. It's on
  *    your own domain and fast, but a Cloudflare Worker cannot open a socket to a
  *    Cloudflare-hosted site, so Discord / X / example.com fail through it.
  *  - "public": a shared public Wisp server (anura.pro) that is NOT a Worker, so
@@ -33,7 +33,7 @@
  */
 (function () {
 	var BACKENDS = {
-		worker: "wss://wisp.zilkcz.com/",
+		worker: "wss://relay.zilkcz.com/",
 		public: "wss://anura.pro/",
 		mine: "wss://wisp2.zilkcz.com/wisp/",
 	};

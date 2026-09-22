@@ -80,9 +80,10 @@ npx wrangler login        # OAuth in browser, once
 npx wrangler deploy
 ```
 
-It's served at `wss://wisp.zilkcz.com/` (custom domain) with a
+It's served at `wss://relay.zilkcz.com/` (a deliberately neutral custom domain —
+the older `wss://wisp.zilkcz.com/` still works too), with a
 `wss://wisp-worker.<your-subdomain>.workers.dev/` fallback. The frontend already
-points at it — see the backend table below — so there's nothing to edit.
+points at `relay` — see the backend table below — so there's nothing to edit.
 
 ### 2. The frontend Worker
 
@@ -154,14 +155,14 @@ If the proxy loads the "blocked" site, you've demonstrated the real evasion mech
 - **Datacenter-IP blocking** — Roblox/Discord sometimes refuse Cloudflare/datacenter IPs.
   A refused connection there is a real-world finding, not a bug.
 
-## Switchable backend (`public/wisp-config.js`)
+## Switchable backend (`public/endpoint.js`)
 
 The frontend picks its Wisp server at load time, so you can reach Cloudflare-fronted
 sites without redeploying:
 
 | backend  | URL                              | reaches Discord / X / Cloudflare sites |
 | -------- | -------------------------------- | -------------------------------------- |
-| `worker` | `wss://wisp.zilkcz.com/`         | no (Worker `connect()` limit)          |
+| `worker` | `wss://relay.zilkcz.com/`        | no (Worker `connect()` limit)          |
 | `public` | `wss://anura.pro/`               | yes — shared, unreliable, not private  |
 | `mine`   | `wss://wisp2.zilkcz.com/wisp/`   | yes — your own server (set up below)   |
 
@@ -234,9 +235,10 @@ is encrypted, and the public URL sits on `zilkcz.com` (as hard to block as the W
 
    Then install it as a service: `cloudflared service install && systemctl enable --now cloudflared`.
 
-5. **Use it.** `wisp-config.js` already has `mine: "wss://wisp2.zilkcz.com/wisp/"`.
+5. **Use it.** `endpoint.js` already has `mine: "wss://wisp2.zilkcz.com/wisp/"`.
    Visit `https://lobster.zilkcz.com/?backend=mine` (or `setBackend("mine")`), then
-   load Discord. To make it the default, move `mine` to `DEFAULT` in `wisp-config.js`.
+   load Discord. To make it the default, move `mine` to `DEFAULT` in `endpoint.js`.
+   (Pick a neutral hostname for your droplet too — `wisp2` leaks the tech.)
 
 Cost is the droplet only (~$4–6/mo). The tunnel and the `zilkcz.com` hostname are free.
 Datacenter IPs occasionally get challenged by Discord; if a site refuses the connection
@@ -244,10 +246,10 @@ that's an IP-reputation issue, not a bug.
 
 ## File map (what was added on top of the template)
 
-- `public/wisp-config.js` — picks the Wisp backend (worker/public/mine) and sets
+- `public/endpoint.js` — picks the Wisp backend (worker/public/mine) and sets
   `window.WISP_URL` (empty = same-origin dev).
 - `public/index.js` — patched to honor `window.WISP_URL`.
-- `public/index.html` — loads `wisp-config.js` before `index.js`.
+- `public/index.html` — loads `endpoint.js` before `index.js`.
 - `scripts/build-svg-shell.mjs` — generates `app/` (the deployed frontend) from `public/`.
 - `wrangler.jsonc` — root config for the `vector` frontend Worker (serves `app/`).
 - `cf-worker/` — the Cloudflare Worker Wisp server (upstream alpgul/worker-wisp-server).

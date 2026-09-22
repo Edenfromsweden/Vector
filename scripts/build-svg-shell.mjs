@@ -28,7 +28,7 @@ const SHARED = [
 	"index.css",
 	"favicon.svg",
 	"search.js",
-	"wisp-config.js",
+	"endpoint.js",
 	"register-sw.js",
 	"games.js",
 	"bg.js",
@@ -113,7 +113,7 @@ const BOOT_REPORT = `			<script>/*<![CDATA[*/
 const SCRIPTS = [
 	"cdn/core/core.js",
 	"cdn/mux/mux.js",
-	"wisp-config.js",
+	"endpoint.js",
 	"register-sw.js",
 	"search.js",
 	"app.js",

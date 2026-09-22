@@ -258,7 +258,7 @@
 		</div>
 			<script src="cdn/core/core.js" onerror="__vnote('core.js')"></script>
 			<script src="cdn/mux/mux.js" onerror="__vnote('mux.js')"></script>
-			<script src="wisp-config.js" onerror="__vnote('wisp-config.js')"></script>
+			<script src="endpoint.js" onerror="__vnote('endpoint.js')"></script>
 			<script src="register-sw.js" onerror="__vnote('register-sw.js')"></script>
 			<script src="search.js" onerror="__vnote('search.js')"></script>
 			<script src="app.js" onerror="__vnote('app.js')"></script>

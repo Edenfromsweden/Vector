@@ -5,7 +5,7 @@ it can be served straight off a static CDN that will not serve HTML.
 
 **Most of it is generated. Do not hand-edit these files:**
 
-`index.svg`, `index.css`, `favicon.svg`, `search.js`, `wisp-config.js`,
+`index.svg`, `index.css`, `favicon.svg`, `search.js`, `endpoint.js`,
 `register-sw.js`, `games.js`, `bg.js`, `credits.html`, `fonts/`
 
 Edit the originals in `public/` and regenerate:
