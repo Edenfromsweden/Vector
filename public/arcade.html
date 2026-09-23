@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Arcade</title>
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0"
+		/>
+		<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+		<style>
+			html,
+			body {
+				margin: 0;
+				height: 100%;
+				background: #040706;
+				color: #d3e3d9;
+				font-family: "Inter", "Poppins", "Segoe UI", sans-serif;
+			}
+			.arcade-top {
+				display: flex;
+				align-items: center;
+				gap: 12px;
+				padding: 14px 18px;
+			}
+			.arcade-top a {
+				color: #729080;
+				text-decoration: none;
+				font-size: 14px;
+			}
+			.arcade-top a:hover {
+				color: #35b97a;
+			}
+			/* The Lumi SDK renders its whole UI inside this container. */
+			#games {
+				width: 100%;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="arcade-top">
+			<a href="index.html">&lsaquo; back</a>
+		</div>
+
+		<!-- Lumi games SDK: fetches game manifests from GNMath, UGS, Daknux and
+		     CKV, then renders a searchable grid with an in-page player. This is a
+		     plain HTML page (not the SVG shell) because the SDK builds its DOM with
+		     document.createElement, which only works in an HTML document. -->
+		<div id="games"></div>
+
+		<script src="lumi.js"></script>
+		<script>
+			window.Lumi.init({
+				container: "#games",
+			});
+		</script>
+	</body>
+</html>
