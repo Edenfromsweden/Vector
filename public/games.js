@@ -230,13 +230,6 @@
 		cover: "https://cdn.jsdelivr.net/gh/daknux/covers@main",
 		html: "https://cdn.jsdelivr.net/gh/daknux/html@main",
 	};
-	const UGS = {
-		api: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-json@main/games.json",
-		h1: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-1@main",
-		h2: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-2@main",
-		h3: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-3@main",
-	};
-
 	async function fetchJSON(url) {
 		try {
 			const r = await fetch(url, { signal: AbortSignal.timeout(25000) });
@@ -265,40 +258,13 @@
 		});
 	}
 
-	function normUgs(data, source) {
-		return (Array.isArray(data) ? data : []).map((g) => {
-			const raw = g.url || "";
-			let base = UGS.h1;
-			if (raw.includes("{HTML_URL2}") || g.repo === "ugs-2") base = UGS.h2;
-			else if (raw.includes("{HTML_URL3}") || g.repo === "ugs-3") base = UGS.h3;
 
-			let cover = (g.cover || g.image || "").replace(
-				/\{COVER_URL\}/g,
-				UGS.h1.replace("/ugs-1@main", "/ugs-covers@main")
-			);
-			if (cover && !cover.startsWith("http")) cover = `${UGS.h1}/${clean(cover)}`;
-
-			let file = raw
-				.replace(/\{HTML_URL1\}/g, UGS.h1)
-				.replace(/\{HTML_URL2\}/g, UGS.h2)
-				.replace(/\{HTML_URL3\}/g, UGS.h3);
-			if (file && !file.startsWith("http")) file = `${base}/${clean(file)}`;
-
-			const name = g.title || g.name || raw;
-			return { id: `UGS:${name}`, name, file, icon: cover || null, source };
-		});
-	}
-
-	// Only the Lumin collection (UGS + Daknux) is loaded alongside the local games.
+	// Only the Lumin collection (Daknux) is loaded alongside the local games.
 	async function loadCollections() {
-		const [dk, ug] = await Promise.all([
-			fetchJSON(DAKNUX.api),
-			fetchJSON(UGS.api),
-		]);
-		return [
-			...normZones(dk, DAKNUX, "Daknux", "Lumin"),
-			...normUgs(ug, "Lumin"),
-		].filter((g) => g.file && g.name && !isJunk(g.name, g.file));
+		const dk = await fetchJSON(DAKNUX.api);
+		return [...normZones(dk, DAKNUX, "Daknux", "Lumin")].filter(
+			(g) => g.file && g.name && !isJunk(g.name, g.file)
+		);
 	}
 
 	// Manifests carry a few non-game promo rows ("[!] COMMENTS", "[!] MORE FUN

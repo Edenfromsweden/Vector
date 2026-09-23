@@ -1,7 +1,7 @@
 "use strict";
 
 /* Loading screen shown on open. Preloads EVERY game icon — the local games plus
- * the Lumin collection (UGS + Daknux) — with a live
+ * the Lumin collection (Daknux) — with a live
  * progress bar and the name of whatever just finished, then fades out.
  *
  * It is defensive on purpose: icons load through a bounded pool (so we don't
@@ -60,11 +60,6 @@
 		api: "https://cdn.jsdelivr.net/gh/daknux/assets@latest/zones.json",
 		cover: "https://cdn.jsdelivr.net/gh/daknux/covers@main",
 	};
-	const UGS = {
-		api: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-json@main/games.json",
-		h1: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-1@main",
-	};
-
 	async function fetchJSON(url) {
 		try {
 			const r = await fetch(url, { signal: AbortSignal.timeout(25000) });
@@ -81,18 +76,6 @@
 				name: g.title || g.name || "",
 				icon: `${cover}/${clean(g.cover)}`,
 			}));
-	}
-	function ugsIcons(data) {
-		return (Array.isArray(data) ? data : [])
-			.map((g) => {
-				let cover = (g.cover || g.image || "").replace(
-					/\{COVER_URL\}/g,
-					UGS.h1.replace("/ugs-1@main", "/ugs-covers@main")
-				);
-				if (cover && !cover.startsWith("http")) cover = `${UGS.h1}/${clean(cover)}`;
-				return { name: g.title || g.name || "", icon: cover };
-			})
-			.filter((g) => g.icon);
 	}
 	// --- image pool ----------------------------------------------------------
 	function preloadOne(url) {
@@ -151,10 +134,9 @@
 	// --- gather everything, then run ----------------------------------------
 	(async function () {
 		setStatus("Fetching game lists…");
-		const [local, dk, ug] = await Promise.all([
+		const [local, dk] = await Promise.all([
 			fetchJSON("games.json"),
 			fetchJSON(DAKNUX.api),
-			fetchJSON(UGS.api),
 		]);
 		if (cancelled) return;
 
@@ -162,7 +144,7 @@
 			.filter((g) => g && g.icon)
 			.map((g) => ({ name: g.name || "", icon: g.icon }));
 
-		const all = [...localIcons, ...zonesIcons(dk, DAKNUX.cover), ...ugsIcons(ug)];
+		const all = [...localIcons, ...zonesIcons(dk, DAKNUX.cover)];
 
 		// Dedupe identical icon URLs so shared covers only load once.
 		const seen = new Set();
