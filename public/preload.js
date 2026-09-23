@@ -1,7 +1,6 @@
 "use strict";
 
-/* Loading screen shown on open. Preloads EVERY game icon — the local games plus
- * the Lumin collection (Daknux) — with a live
+/* Loading screen shown on open. Preloads the Lumin (Daknux) game icons with a live
  * progress bar and the name of whatever just finished, then fades out.
  *
  * It is defensive on purpose: icons load through a bounded pool (so we don't
@@ -133,18 +132,11 @@
 
 	// --- gather everything, then run ----------------------------------------
 	(async function () {
-		setStatus("Fetching game lists…");
-		const [local, dk] = await Promise.all([
-			fetchJSON("games.json"),
-			fetchJSON(DAKNUX.api),
-		]);
+		setStatus("Fetching game list…");
+		const dk = await fetchJSON(DAKNUX.api);
 		if (cancelled) return;
 
-		const localIcons = (Array.isArray(local) ? local : [])
-			.filter((g) => g && g.icon)
-			.map((g) => ({ name: g.name || "", icon: g.icon }));
-
-		const all = [...localIcons, ...zonesIcons(dk, DAKNUX.cover)];
+		const all = [...zonesIcons(dk, DAKNUX.cover)];
 
 		// Dedupe identical icon URLs so shared covers only load once.
 		const seen = new Set();
