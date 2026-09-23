@@ -21,7 +21,7 @@
 		running = true;
 	const pointer = { x: 0, y: 0, active: false };
 
-	const AUR = [
+	const DEFAULT_AUR = [
 		[124, 58, 237],
 		[139, 92, 246],
 		[100, 149, 237],
@@ -29,26 +29,49 @@
 		[167, 139, 250],
 	];
 
+	// Aurora colours come from CSS variables (--aur-0..4 as "r,g,b") so themes can
+	// recolour the background; fall back to the defaults if a var is missing.
+	function readAur() {
+		const cs = getComputedStyle(document.documentElement);
+		return DEFAULT_AUR.map((def, i) => {
+			const raw = cs.getPropertyValue(`--aur-${i}`).trim();
+			const parts = raw.split(",").map((n) => parseInt(n, 10));
+			return parts.length === 3 && parts.every((n) => !isNaN(n)) ? parts : def;
+		});
+	}
+
+	let AUR = readAur();
+
 	// Pre-bake a soft radial glow sprite per colour (drawn with drawImage — far
 	// cheaper than building a gradient every frame).
 	const SPRITE = 64;
-	const glows = AUR.map((rgb) => {
-		const c = xel("canvas");
-		c.width = c.height = SPRITE;
-		const g = c.getContext("2d");
-		const grad = g.createRadialGradient(
-			SPRITE / 2,
-			SPRITE / 2,
-			0,
-			SPRITE / 2,
-			SPRITE / 2,
-			SPRITE / 2
-		);
-		grad.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`);
-		grad.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
-		g.fillStyle = grad;
-		g.fillRect(0, 0, SPRITE, SPRITE);
-		return c;
+	function bakeGlows() {
+		return AUR.map((rgb) => {
+			const c = xel("canvas");
+			c.width = c.height = SPRITE;
+			const g = c.getContext("2d");
+			const grad = g.createRadialGradient(
+				SPRITE / 2,
+				SPRITE / 2,
+				0,
+				SPRITE / 2,
+				SPRITE / 2,
+				SPRITE / 2
+			);
+			grad.addColorStop(0, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},1)`);
+			grad.addColorStop(1, `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0)`);
+			g.fillStyle = grad;
+			g.fillRect(0, 0, SPRITE, SPRITE);
+			return c;
+		});
+	}
+	let glows = bakeGlows();
+
+	// Re-read the palette and rebuild when the theme changes (settings.js fires it).
+	window.addEventListener("vector-theme", () => {
+		AUR = readAur();
+		glows = bakeGlows();
+		if (ribbons) for (let i = 0; i < ribbons.length; i++) ribbons[i].c = AUR[i % AUR.length];
 	});
 
 	function resize() {

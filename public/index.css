@@ -22,6 +22,141 @@
 	--font: "Comfortaa", "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
 		Arial, sans-serif;
 	--mono: ui-monospace, "Cascadia Code", "SF Mono", "Courier New", monospace;
+
+	/* Themeable background: two accent-tint radials over a 3-stop base gradient. */
+	--bg-a: #140d2c;
+	--bg-b: #180f31;
+	--bg-c: #0b0817;
+	--bg-r1: rgba(100, 149, 237, 0.22);
+	--bg-r2: rgba(124, 58, 237, 0.28);
+
+	/* Themeable aurora colours (r,g,b) read by bg.js. */
+	--aur-0: 124, 58, 237;
+	--aur-1: 139, 92, 246;
+	--aur-2: 100, 149, 237;
+	--aur-3: 143, 180, 245;
+	--aur-4: 167, 139, 250;
+}
+
+/* ---- Themes: each overrides the accent + background + aurora variables. ---- */
+:root[data-theme="ocean"] {
+	--violet: #3b82f6;
+	--violet-soft: #60a5fa;
+	--violet-deep: #1d4ed8;
+	--cornflower: #22d3ee;
+	--cornflower-soft: #67e8f9;
+	--border: rgba(56, 189, 248, 0.28);
+	--border-focus: rgba(34, 211, 238, 0.75);
+	--bg-a: #07172e;
+	--bg-b: #0a2033;
+	--bg-c: #04101c;
+	--bg-r1: rgba(34, 211, 238, 0.16);
+	--bg-r2: rgba(59, 130, 246, 0.24);
+	--aur-0: 59, 130, 246;
+	--aur-1: 14, 165, 233;
+	--aur-2: 34, 211, 238;
+	--aur-3: 103, 232, 249;
+	--aur-4: 96, 165, 250;
+}
+
+:root[data-theme="emerald"] {
+	--violet: #10b981;
+	--violet-soft: #34d399;
+	--violet-deep: #047857;
+	--cornflower: #a3e635;
+	--cornflower-soft: #bef264;
+	--border: rgba(52, 211, 153, 0.28);
+	--border-focus: rgba(163, 230, 53, 0.7);
+	--bg-a: #062017;
+	--bg-b: #08271c;
+	--bg-c: #03130d;
+	--bg-r1: rgba(163, 230, 53, 0.14);
+	--bg-r2: rgba(16, 185, 129, 0.26);
+	--aur-0: 16, 185, 129;
+	--aur-1: 5, 150, 105;
+	--aur-2: 52, 211, 153;
+	--aur-3: 163, 230, 53;
+	--aur-4: 110, 231, 183;
+}
+
+:root[data-theme="crimson"] {
+	--violet: #f43f5e;
+	--violet-soft: #fb7185;
+	--violet-deep: #be123c;
+	--cornflower: #f97316;
+	--cornflower-soft: #fdba74;
+	--border: rgba(251, 113, 133, 0.28);
+	--border-focus: rgba(244, 63, 94, 0.7);
+	--bg-a: #2a0a12;
+	--bg-b: #310d14;
+	--bg-c: #170509;
+	--bg-r1: rgba(249, 115, 22, 0.14);
+	--bg-r2: rgba(244, 63, 94, 0.26);
+	--aur-0: 244, 63, 94;
+	--aur-1: 225, 29, 72;
+	--aur-2: 251, 113, 133;
+	--aur-3: 249, 115, 22;
+	--aur-4: 253, 164, 175;
+}
+
+:root[data-theme="amber"] {
+	--violet: #f59e0b;
+	--violet-soft: #fbbf24;
+	--violet-deep: #b45309;
+	--cornflower: #fde047;
+	--cornflower-soft: #fef08a;
+	--border: rgba(251, 191, 36, 0.3);
+	--border-focus: rgba(245, 158, 11, 0.75);
+	--bg-a: #241605;
+	--bg-b: #2a1a06;
+	--bg-c: #140b02;
+	--bg-r1: rgba(253, 224, 71, 0.14);
+	--bg-r2: rgba(245, 158, 11, 0.24);
+	--aur-0: 245, 158, 11;
+	--aur-1: 217, 119, 6;
+	--aur-2: 251, 191, 36;
+	--aur-3: 253, 224, 71;
+	--aur-4: 252, 211, 77;
+}
+
+:root[data-theme="rose"] {
+	--violet: #ec4899;
+	--violet-soft: #f472b6;
+	--violet-deep: #be185d;
+	--cornflower: #a855f7;
+	--cornflower-soft: #c084fc;
+	--border: rgba(244, 114, 182, 0.28);
+	--border-focus: rgba(232, 72, 153, 0.7);
+	--bg-a: #280a1e;
+	--bg-b: #2f0d24;
+	--bg-c: #160511;
+	--bg-r1: rgba(168, 85, 247, 0.16);
+	--bg-r2: rgba(236, 72, 153, 0.26);
+	--aur-0: 236, 72, 153;
+	--aur-1: 219, 39, 119;
+	--aur-2: 168, 85, 247;
+	--aur-3: 192, 132, 252;
+	--aur-4: 244, 114, 182;
+}
+
+:root[data-theme="mono"] {
+	--violet: #9ca3af;
+	--violet-soft: #d1d5db;
+	--violet-deep: #6b7280;
+	--cornflower: #e5e7eb;
+	--cornflower-soft: #f3f4f6;
+	--border: rgba(209, 213, 219, 0.24);
+	--border-focus: rgba(229, 231, 235, 0.6);
+	--bg-a: #141417;
+	--bg-b: #1a1a1f;
+	--bg-c: #0a0a0c;
+	--bg-r1: rgba(229, 231, 235, 0.08);
+	--bg-r2: rgba(156, 163, 175, 0.14);
+	--aur-0: 156, 163, 175;
+	--aur-1: 107, 114, 128;
+	--aur-2: 209, 213, 219;
+	--aur-3: 229, 231, 235;
+	--aur-4: 180, 185, 195;
 }
 
 * {
@@ -38,18 +173,11 @@ body {
 	font-family: var(--font);
 	color: var(--text);
 	background:
-		radial-gradient(
-			1100px 620px at 12% -12%,
-			rgba(100, 149, 237, 0.22),
-			transparent 60%
-		),
-		radial-gradient(
-			1000px 720px at 92% 112%,
-			rgba(124, 58, 237, 0.28),
-			transparent 62%
-		),
-		linear-gradient(158deg, #140d2c 0%, #180f31 44%, #0b0817 100%);
+		radial-gradient(1100px 620px at 12% -12%, var(--bg-r1), transparent 60%),
+		radial-gradient(1000px 720px at 92% 112%, var(--bg-r2), transparent 62%),
+		linear-gradient(158deg, var(--bg-a) 0%, var(--bg-b) 44%, var(--bg-c) 100%);
 	background-attachment: fixed;
+	transition: background 0.4s ease;
 	display: flex;
 	flex-direction: column;
 	min-height: 100vh;
@@ -949,4 +1077,79 @@ body.proxying #bg {
 	.tagline {
 		padding: 0 8px;
 	}
+}
+
+/* Hero action buttons (Games / Settings) sit in a centered row. */
+.hero-actions {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 12px;
+}
+
+/* Settings panel (reuses .panel). */
+.settings-body {
+	width: 100%;
+	max-width: 900px;
+	margin: 0 auto;
+}
+
+.settings-section {
+	margin-bottom: 28px;
+}
+
+.settings-label {
+	margin: 0 0 14px;
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	color: var(--muted);
+}
+
+.theme-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+	gap: 12px;
+}
+
+.theme-swatch {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	font: inherit;
+	font-size: 14px;
+	color: var(--text);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease,
+		transform 0.1s ease;
+}
+
+.theme-swatch:hover {
+	background: var(--surface-2);
+	border-color: var(--border-focus);
+}
+
+.theme-swatch.on {
+	border-color: var(--border-focus);
+	box-shadow: 0 0 0 2px var(--border-focus);
+}
+
+.theme-chip {
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	flex: none;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.theme-name {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }

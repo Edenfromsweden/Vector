@@ -30,6 +30,7 @@ const SHARED = [
 	"search.js",
 	"endpoint.js",
 	"register-sw.js",
+	"settings.js",
 	"games.js",
 	"preload.js",
 	"bg.js",
@@ -66,9 +67,9 @@ const SVG_STYLE = `			<style>/*<![CDATA[*/
 				   stacking context, painted first) and leave html/body transparent. */
 				:root {
 					background:
-						radial-gradient(1100px 620px at 12% -12%, rgba(100, 149, 237, 0.22), transparent 60%),
-						radial-gradient(1000px 720px at 92% 112%, rgba(124, 58, 237, 0.28), transparent 62%),
-						linear-gradient(158deg, #140d2c 0%, #180f31 44%, #0b0817 100%);
+						radial-gradient(1100px 620px at 12% -12%, var(--bg-r1), transparent 60%),
+						radial-gradient(1000px 720px at 92% 112%, var(--bg-r2), transparent 62%),
+						linear-gradient(158deg, var(--bg-a) 0%, var(--bg-b) 44%, var(--bg-c) 100%);
 					background-attachment: fixed;
 				}
 				html, body { background: transparent; }
@@ -119,6 +120,7 @@ const SCRIPTS = [
 	"search.js",
 	"app.js",
 	"bg.js",
+	"settings.js",
 	"preload.js",
 	"games.js",
 ];
