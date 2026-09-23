@@ -551,6 +551,80 @@ body.proxying #bg {
 	color: transparent;
 }
 
+.games-toolbar {
+	width: 100%;
+	max-width: 900px;
+	margin: 0 auto 18px;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px;
+}
+
+.games-search {
+	flex: 1 1 220px;
+	min-width: 0;
+	height: 40px;
+	padding: 0 14px;
+	font: inherit;
+	font-size: 14px;
+	color: var(--text);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	outline: none;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+
+.games-search::placeholder {
+	color: var(--cornflower-soft);
+	opacity: 0.6;
+}
+
+.games-search:focus {
+	border-color: var(--border-focus);
+	background: var(--surface-2);
+}
+
+.games-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.game-filter {
+	font: inherit;
+	font-size: 13px;
+	color: var(--cornflower-soft);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	padding: 8px 14px;
+	border-radius: 999px;
+	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.game-filter:hover {
+	background: var(--surface-2);
+	border-color: var(--border-focus);
+	color: var(--text);
+}
+
+.game-filter.on {
+	color: #fff;
+	background: linear-gradient(
+		120deg,
+		var(--violet-soft),
+		var(--cornflower-soft)
+	);
+	border-color: transparent;
+}
+
 .games-grid {
 	width: 100%;
 	max-width: 900px;

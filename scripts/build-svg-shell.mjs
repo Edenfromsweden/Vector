@@ -34,8 +34,6 @@ const SHARED = [
 	"games.js",
 	"bg.js",
 	"credits.html",
-	"lumi.js",
-	"arcade.html",
 	"fonts/comfortaa.woff2",
 ];
 
