@@ -57,6 +57,7 @@
 	}
 
 	let games = [];
+	let loading = true;
 
 	// Text search over the grid.
 	let currentSearch = "";
@@ -82,7 +83,14 @@
 
 		grid.textContent = "";
 		if (!sorted.length) {
-			if (empty) empty.hidden = false;
+			if (empty) {
+				empty.hidden = false;
+				empty.textContent = loading
+					? "Loading games…"
+					: games.length
+						? "No games match your search."
+						: "No games found.";
+			}
 			return;
 		}
 		if (empty) empty.hidden = true;
@@ -175,17 +183,22 @@
 		frame.src = "about:blank";
 	}
 
+	function openPanel() {
+		panel.classList.add("show");
+		panel.setAttribute("aria-hidden", "false");
+		if (searchEl) setTimeout(() => searchEl.focus(), 0); // focus search on open
+	}
+	function closePanel() {
+		panel.classList.remove("show");
+		panel.setAttribute("aria-hidden", "true");
+	}
+
 	if (openBtn)
 		openBtn.addEventListener("click", (e) => {
 			e.preventDefault();
-			panel.classList.add("show");
-			panel.setAttribute("aria-hidden", "false");
+			openPanel();
 		});
-	if (closeBtn)
-		closeBtn.addEventListener("click", () => {
-			panel.classList.remove("show");
-			panel.setAttribute("aria-hidden", "true");
-		});
+	if (closeBtn) closeBtn.addEventListener("click", closePanel);
 	if (vBack) vBack.addEventListener("click", closeGame);
 
 	if (searchEl)
@@ -193,6 +206,13 @@
 			currentSearch = searchEl.value;
 			render();
 		});
+
+	// Escape closes the game player first, then the panel.
+	document.addEventListener("keydown", (e) => {
+		if (e.key !== "Escape") return;
+		if (view && view.classList.contains("show")) closeGame();
+		else if (panel.classList.contains("show")) closePanel();
+	});
 
 	/* Games are fetched from the Lumin (Daknux) collection at runtime and
 	 * normalized to the {id, name, file, icon} shape the grid uses, so they render
@@ -256,11 +276,13 @@
 	}
 
 	async function loadAll() {
+		render(); // show the "Loading games…" state right away
 		try {
 			games = await loadCollections();
 		} catch {
 			games = [];
 		}
+		loading = false;
 		render();
 	}
 
