@@ -32,6 +32,7 @@ const SHARED = [
 	"endpoint.js",
 	"register-sw.js",
 	"games.js",
+	"preload.js",
 	"bg.js",
 	"credits.html",
 	"fonts/comfortaa.woff2",
@@ -119,6 +120,7 @@ const SCRIPTS = [
 	"search.js",
 	"app.js",
 	"bg.js",
+	"preload.js",
 	"games.js",
 ];
 

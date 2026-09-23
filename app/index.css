@@ -57,6 +57,99 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
+/* Loading screen (preload.js). Covers the page on open, fades out when done. */
+#preloader {
+	position: fixed;
+	inset: 0;
+	z-index: 1000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	background: linear-gradient(158deg, #140d2c 0%, #180f31 44%, #0b0817 100%);
+	transition:
+		opacity 0.4s ease,
+		visibility 0.4s ease;
+}
+
+#preloader.done {
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.pl-inner {
+	width: 100%;
+	max-width: 360px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 18px;
+	text-align: center;
+}
+
+.pl-mark {
+	animation: pl-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pl-pulse {
+	0%,
+	100% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	50% {
+		transform: translateY(-4px);
+		opacity: 0.75;
+	}
+}
+
+.pl-bar {
+	width: 100%;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--surface-2);
+	overflow: hidden;
+}
+
+.pl-fill {
+	width: 0%;
+	height: 100%;
+	border-radius: 999px;
+	background: linear-gradient(90deg, var(--violet-soft), var(--cornflower-soft));
+	transition: width 0.2s ease;
+}
+
+.pl-status {
+	font-size: 13px;
+	color: var(--muted);
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.pl-skip {
+	font: inherit;
+	font-size: 12px;
+	color: var(--cornflower-soft);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	padding: 6px 16px;
+	border-radius: 999px;
+	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.pl-skip:hover {
+	background: var(--surface-2);
+	border-color: var(--border-focus);
+	color: var(--text);
+}
+
 /* Animated aurora canvas behind the content (drawn by bg.js) */
 #bg {
 	position: fixed;
