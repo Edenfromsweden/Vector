@@ -19,6 +19,19 @@
 		{ id: "amber", name: "Amber", sw: ["#fbbf24", "#fde047"] },
 		{ id: "rose", name: "Rose", sw: ["#f472b6", "#a855f7"] },
 		{ id: "mono", name: "Mono", sw: ["#d1d5db", "#9ca3af"] },
+		{ id: "sunset", name: "Sunset", sw: ["#fb7185", "#f7ad30"] },
+		{ id: "cyber", name: "Cyber", sw: ["#d946ef", "#2bc1da"] },
+		{ id: "grape", name: "Grape", sw: ["#a855f7", "#9058f0"] },
+		{ id: "slate", name: "Slate", sw: ["#94a3b8", "#56c7f9"] },
+		{ id: "mint", name: "Mint", sw: ["#2dd4bf", "#65e393"] },
+		{ id: "blood", name: "Blood", sw: ["#ef4444", "#c43e3e"] },
+		{ id: "ice", name: "Ice", sw: ["#7dd3fc", "#c4eafd"] },
+		{ id: "lava", name: "Lava", sw: ["#f97316", "#f16060"] },
+		{ id: "forest", name: "Forest", sw: ["#22c55e", "#96d439"] },
+		{ id: "bubblegum", name: "Bubblegum", sw: ["#f472b6", "#78b3fb"] },
+		{ id: "midnight", name: "Midnight", sw: ["#6366f1", "#949df9"] },
+		{ id: "toxic", name: "Toxic", sw: ["#a3e635", "#43ce76"] },
+		{ id: "sunflower", name: "Sunflower", sw: ["#facc15", "#fca259"] },
 	];
 
 	function currentTheme() {
