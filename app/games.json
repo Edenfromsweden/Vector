@@ -2,109 +2,109 @@
   {
     "id": "FNF_vs_BFDI26",
     "name": "FNF vs BFDI26",
-    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io@155005f1bd737dab1ff21649e33d0d74b7d3a02d/bdfi26/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_BFDI26.html"
+    "file": "games/FNF_vs_BFDI26.html",
+    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io@155005f1bd737dab1ff21649e33d0d74b7d3a02d/bdfi26/favicon.png"
   },
   {
     "id": "FNF_vs_Bside",
     "name": "FNF vs Bside",
-    "icon": "https://quantil.jsdelivr.net/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Bside.html"
+    "file": "games/FNF_vs_Bside.html",
+    "icon": "https://quantil.jsdelivr.net/favicon.png"
   },
   {
     "id": "FNF_vs_Garcello",
     "name": "FNF vs Garcello",
-    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/maths@19a7910572966b9604b81bf6e9b85cacacc785ab/garcello/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Garcello.html"
+    "file": "games/FNF_vs_Garcello.html",
+    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/maths@19a7910572966b9604b81bf6e9b85cacacc785ab/garcello/favicon.png"
   },
   {
     "id": "FNF_vs_Hex",
     "name": "FNF vs Hex",
-    "icon": "https://quantil.jsdelivr.net/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Hex.html"
+    "file": "games/FNF_vs_Hex.html",
+    "icon": "https://quantil.jsdelivr.net/favicon.png"
   },
   {
     "id": "FNF_vs_Hit_Single_Real",
     "name": "FNF vs Hit Single Real",
-    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf@00d21c48bb912e5b6b3373ca21c793c135aae5d8/hits/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Hit_Single_Real.html"
+    "file": "games/FNF_vs_Hit_Single_Real.html",
+    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf@00d21c48bb912e5b6b3373ca21c793c135aae5d8/hits/favicon.png"
   },
   {
     "id": "FNF_vs_Lullaby",
     "name": "FNF vs Lullaby",
-    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/hypno-v2/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Lullaby.html"
+    "file": "games/FNF_vs_Lullaby.html",
+    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/hypno-v2/favicon.png"
   },
   {
     "id": "FNF_vs_Mario",
     "name": "FNF vs Mario",
-    "icon": "https://quantil.jsdelivr.net/gh/mll-enh/diesmosfilehost@8679c0fe47a99f5657f04958fd06c5abdaa4a6b9/MM/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Mario.html"
+    "file": "games/FNF_vs_Mario.html",
+    "icon": "https://quantil.jsdelivr.net/gh/mll-enh/diesmosfilehost@8679c0fe47a99f5657f04958fd06c5abdaa4a6b9/MM/favicon.png"
   },
   {
     "id": "FNF_vs_Mid_Fight",
     "name": "FNF vs Mid Fight",
-    "icon": "https://quantil.jsdelivr.net/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Mid_Fight.html"
+    "file": "games/FNF_vs_Mid_Fight.html",
+    "icon": "https://quantil.jsdelivr.net/favicon.png"
   },
   {
     "id": "FNF_vs_Miku",
     "name": "FNF vs Miku",
-    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@6b6680f79ab8c4e8349a920c2a240c5e7ee689ea/miku/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Miku.html"
+    "file": "games/FNF_vs_Miku.html",
+    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@6b6680f79ab8c4e8349a920c2a240c5e7ee689ea/miku/favicon.png"
   },
   {
     "id": "FNF_vs_Neo",
     "name": "FNF vs Neo",
-    "icon": "https://quantil.jsdelivr.net/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Neo.html"
+    "file": "games/FNF_vs_Neo.html",
+    "icon": "https://quantil.jsdelivr.net/favicon.png"
   },
   {
     "id": "FNF_vs_Ourple",
     "name": "FNF vs Ourple",
-    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/ourple-guy-v2/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Ourple.html"
+    "file": "games/FNF_vs_Ourple.html",
+    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/ourple-guy-v2/favicon.png"
   },
   {
     "id": "FNF_vs_Pibby",
     "name": "FNF vs Pibby",
-    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/maths/pibby2/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Pibby.html"
+    "file": "games/FNF_vs_Pibby.html",
+    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/maths/pibby2/favicon.png"
   },
   {
     "id": "FNF_vs_QT",
     "name": "FNF vs QT",
-    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf/qt/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_QT.html"
+    "file": "games/FNF_vs_QT.html",
+    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf/qt/favicon.png"
   },
   {
     "id": "FNF_vs_Sky",
     "name": "FNF vs Sky",
-    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf-mods@6b6680f79ab8c4e8349a920c2a240c5e7ee689ea/sky/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Sky.html"
+    "file": "games/FNF_vs_Sky.html",
+    "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf-mods@6b6680f79ab8c4e8349a920c2a240c5e7ee689ea/sky/favicon.png"
   },
   {
     "id": "FNF_vs_Soft",
     "name": "FNF vs Soft",
-    "icon": "https://quantil.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/soft/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Soft.html"
+    "file": "games/FNF_vs_Soft.html",
+    "icon": "https://quantil.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/soft/favicon.png"
   },
   {
     "id": "FNF_vs_Sonic_exe",
     "name": "FNF vs Sonic exe",
-    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/sonic-exe-4/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Sonic_exe.html"
+    "file": "games/FNF_vs_Sonic_exe.html",
+    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/sonic-exe-4/favicon.png"
   },
   {
     "id": "FNF_vs_Tails",
     "name": "FNF vs Tails",
-    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/tails-gets-trolledv2/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Tails.html"
+    "file": "games/FNF_vs_Tails.html",
+    "icon": "https://quantil.jsdelivr.net/gh/bubbls/fnf-mods@main/tails-gets-trolledv2/favicon.png"
   },
   {
     "id": "FNF_vs_Tricky",
     "name": "FNF vs Tricky",
-    "icon": "https://quantil.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/tricky/favicon.png",
-    "file": "https://v.zilkcz.com/games/FNF_vs_Tricky.html"
+    "file": "games/FNF_vs_Tricky.html",
+    "icon": "https://quantil.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/tricky/favicon.png"
   }
 ]
