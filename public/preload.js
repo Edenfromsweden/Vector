@@ -193,7 +193,7 @@
 		const seen = new Set();
 		const items = [];
 		for (const g of all) {
-			if (g.icon && !seen.has(g.icon)) {
+			if (g.icon && !seen.has(g.icon) && !/^\s*\[!\]/.test(g.name || "")) {
 				seen.add(g.icon);
 				items.push(g);
 			}
