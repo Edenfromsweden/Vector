@@ -224,14 +224,8 @@
 					<button type="button" class="game-filter" data-source="Local">
 						Local
 					</button>
-					<button type="button" class="game-filter" data-source="GNMath">
-						GNMath
-					</button>
 					<button type="button" class="game-filter" data-source="Lumin">
 						Lumin
-					</button>
-					<button type="button" class="game-filter" data-source="Cherri">
-						Cherri
 					</button>
 				</div>
 			</div>

@@ -1,7 +1,7 @@
 "use strict";
 
 /* Loading screen shown on open. Preloads EVERY game icon — the local games plus
- * all four collections (GNMath, Lumin = UGS + Daknux, Cherri) — with a live
+ * the Lumin collection (UGS + Daknux) — with a live
  * progress bar and the name of whatever just finished, then fades out.
  *
  * It is defensive on purpose: icons load through a bounded pool (so we don't
@@ -56,10 +56,6 @@
 					.replace(/\{COVER_URL\}\//gi, "")
 					.replace(/^\//, "");
 
-	const GN = {
-		api: "https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json",
-		cover: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main",
-	};
 	const DAKNUX = {
 		api: "https://cdn.jsdelivr.net/gh/daknux/assets@latest/zones.json",
 		cover: "https://cdn.jsdelivr.net/gh/daknux/covers@main",
@@ -68,7 +64,6 @@
 		api: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-json@main/games.json",
 		h1: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-1@main",
 	};
-	const CKV_BASE = "https://cdn.jsdelivr.net/gl/x8r/cherrigames@main";
 
 	async function fetchJSON(url) {
 		try {
@@ -99,18 +94,6 @@
 			})
 			.filter((g) => g.icon);
 	}
-	function ckvIcons(data) {
-		return (Array.isArray(data) ? data : [])
-			.map((g) => {
-				const img = g.img || g.cover || "";
-				return {
-					name: g.name || g.title || "",
-					icon: img ? `${CKV_BASE}/${clean(img)}` : "",
-				};
-			})
-			.filter((g) => g.icon);
-	}
-
 	// --- image pool ----------------------------------------------------------
 	function preloadOne(url) {
 		return new Promise((resolve) => {
@@ -168,12 +151,10 @@
 	// --- gather everything, then run ----------------------------------------
 	(async function () {
 		setStatus("Fetching game lists…");
-		const [local, gn, dk, ug, ck] = await Promise.all([
+		const [local, dk, ug] = await Promise.all([
 			fetchJSON("games.json"),
-			fetchJSON(GN.api),
 			fetchJSON(DAKNUX.api),
 			fetchJSON(UGS.api),
-			fetchJSON(`${CKV_BASE}/ckv.json`),
 		]);
 		if (cancelled) return;
 
@@ -181,13 +162,7 @@
 			.filter((g) => g && g.icon)
 			.map((g) => ({ name: g.name || "", icon: g.icon }));
 
-		const all = [
-			...localIcons,
-			...zonesIcons(gn, GN.cover),
-			...zonesIcons(dk, DAKNUX.cover),
-			...ugsIcons(ug),
-			...ckvIcons(ck),
-		];
+		const all = [...localIcons, ...zonesIcons(dk, DAKNUX.cover), ...ugsIcons(ug)];
 
 		// Dedupe identical icon URLs so shared covers only load once.
 		const seen = new Set();

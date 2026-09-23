@@ -59,7 +59,7 @@
 	let games = [];
 
 	// Source filter + text search over the grid. "All" shows everything; the
-	// other values match a game's `source` tag (Local / GNMath / Lumin / Cherri).
+	// other values match a game's `source` tag (Local / Lumin).
 	let currentSource = "All";
 	let currentSearch = "";
 	const searchEl = document.getElementById("games-search");
@@ -225,11 +225,6 @@
 					.replace(/\{COVER_URL\}\//gi, "")
 					.replace(/^\//, "");
 
-	const GN = {
-		api: "https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json",
-		cover: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main",
-		html: "https://cdn.jsdelivr.net/gh/freebuisness/html@main",
-	};
 	const DAKNUX = {
 		api: "https://cdn.jsdelivr.net/gh/daknux/assets@latest/zones.json",
 		cover: "https://cdn.jsdelivr.net/gh/daknux/covers@main",
@@ -241,7 +236,6 @@
 		h2: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-2@main",
 		h3: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-3@main",
 	};
-	const CKV_BASE = "https://cdn.jsdelivr.net/gl/x8r/cherrigames@main";
 
 	async function fetchJSON(url) {
 		try {
@@ -252,8 +246,8 @@
 		}
 	}
 
-	// GNMath and Daknux share a manifest shape: {url, title/name, cover}.
-	// `idPrefix` keeps ids unique per repo; `source` is the filter label shown.
+	// Daknux manifest shape: {url, title/name, cover}. `idPrefix` keeps ids
+	// unique per repo; `source` is the filter label shown.
 	function normZones(data, c, idPrefix, source) {
 		return (Array.isArray(data) ? data : []).map((g) => {
 			const u = clean(g.url);
@@ -295,35 +289,15 @@
 		});
 	}
 
-	function normCkv(data, source) {
-		return (Array.isArray(data) ? data : []).map((g) => {
-			const raw = g.url || "";
-			const img = g.img || g.cover || "";
-			const name = g.name || g.title || raw;
-			return {
-				id: `CKV:${name}`,
-				name,
-				file: raw.startsWith("http") ? raw : `${CKV_BASE}/${clean(raw)}`,
-				icon: img ? `${CKV_BASE}/${clean(img)}` : null,
-				source,
-			};
-		});
-	}
-
-	// Source labels used by the filter chips. GNMath is its own; UGS + Daknux are
-	// grouped under "Lumin"; CKV (cherrigames) is "Cherri".
+	// Only the Lumin collection (UGS + Daknux) is loaded alongside the local games.
 	async function loadCollections() {
-		const [gn, dk, ug, ck] = await Promise.all([
-			fetchJSON(GN.api),
+		const [dk, ug] = await Promise.all([
 			fetchJSON(DAKNUX.api),
 			fetchJSON(UGS.api),
-			fetchJSON(`${CKV_BASE}/ckv.json`),
 		]);
 		return [
-			...normZones(gn, GN, "GNMath", "GNMath"),
 			...normZones(dk, DAKNUX, "Daknux", "Lumin"),
 			...normUgs(ug, "Lumin"),
-			...normCkv(ck, "Cherri"),
 		].filter((g) => g.file && g.name && !isJunk(g.name, g.file));
 	}
 
