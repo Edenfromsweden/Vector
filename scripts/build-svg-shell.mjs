@@ -15,6 +15,7 @@ import {
 	copyFileSync,
 	mkdirSync,
 	rmSync,
+	readdirSync,
 } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -314,7 +315,20 @@ ${BOOT_REPORT.replace(/^\t{3}/gm, "\t\t")}
 	console.log(
 		`Vendored engine cdn/ -> app/cdn/ under neutral names (${ENGINE.length} files)`
 	);
-	console.log("Left app-specific: app.js, sw.js, dom-shim.js, games.json");
+
+	// Ship the games inside app/ and list them by RELATIVE path, so they load
+	// from whatever host is serving the site (lobster.zilkcz.com today, anything
+	// tomorrow). No domain is baked in, so moving the site never breaks games.
+	rmSync(`${out}/games`, { recursive: true, force: true });
+	mkdirSync(`${out}/games`, { recursive: true });
+	const gameFiles = readdirSync(`${src}/games`);
+	for (const f of gameFiles) copyFileSync(`${src}/games/${f}`, `${out}/games/${f}`);
+	copyFileSync(`${src}/games.json`, `${out}/games.json`);
+	console.log(
+		`Copied ${gameFiles.length} games + games.json public/ -> app/ (relative paths)`
+	);
+
+	console.log("Left app-specific: app.js, sw.js, dom-shim.js");
 }
 
 build();

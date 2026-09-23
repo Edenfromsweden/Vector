@@ -6,7 +6,8 @@ it can be served straight off a static CDN that will not serve HTML.
 **Most of it is generated. Do not hand-edit these files:**
 
 `index.svg`, `index.css`, `favicon.svg`, `search.js`, `endpoint.js`,
-`register-sw.js`, `games.js`, `bg.js`, `credits.html`, `fonts/`
+`register-sw.js`, `games.js`, `bg.js`, `credits.html`, `fonts/`, `games/`,
+`games.json`
 
 Edit the originals in `public/` and regenerate:
 
@@ -27,7 +28,10 @@ Hand-maintained, because they genuinely differ per host:
 - `sw.js` — imports the engine from this directory rather than an absolute URL.
 - `dom-shim.js` — only needed in an SVG document, where `document.createElement`
   would otherwise build nodes in the wrong namespace.
-- `games.json` — points at wherever the game files are hosted.
+
+Games are copied into `app/games/` and listed in `games.json` by relative path
+(`games/<name>.html`), so they load from whichever domain serves the site. No
+host is hardcoded; changing the site's URL needs no edit here.
 
 ## Note on parity
 
