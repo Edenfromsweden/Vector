@@ -14,6 +14,8 @@
 		<meta name="theme-color" content="#100a24" />
 
 		<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+
+		<noscript><style>#preloader { display: none !important; }</style></noscript>
 		<link rel="stylesheet" href="index.css" />
 	</head>
 
@@ -23,6 +25,38 @@
 				<strong style="display:block;font-size:20px;margin-bottom:8px">Vector couldn&#8217;t start</strong>
 				<span id="boot-detail">The page&#8217;s scripts did not run.</span><br />
 				<span style="opacity:0.7;font-size:14px">If this is a CDN, try a URL pinned to a commit rather than a branch &#8212; a half-updated cache serves a new page with old scripts.</span>
+			</div>
+		</div>
+
+		<!-- Loading screen: preloads the game icons on open and shows progress.
+		     preload.js removes it when done (or after a timeout, so it can never
+		     hang). Hidden entirely when JavaScript is off (see <noscript> above). -->
+		<div id="preloader">
+			<div class="pl-inner">
+				<div class="pl-mark">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="56" height="56" aria-hidden="true">
+						<defs>
+							<linearGradient id="plg" x1="0" y1="0" x2="1" y2="1">
+								<stop offset="0" stop-color="#a78bfa" />
+								<stop offset="1" stop-color="#6495ed" />
+							</linearGradient>
+						</defs>
+						<rect x="6" y="6" width="84" height="84" rx="24" fill="url(#plg)" />
+						<g
+							stroke="#ffffff"
+							stroke-width="10"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							fill="none"
+						>
+							<line x1="32" y1="64" x2="64" y2="32" />
+							<polyline points="44,32 64,32 64,52" />
+						</g>
+					</svg>
+				</div>
+				<div class="pl-bar"><div class="pl-fill" id="pl-fill"></div></div>
+				<div class="pl-status" id="pl-status">Loading…</div>
+				<button type="button" id="pl-skip" class="pl-skip">Skip</button>
 			</div>
 		</div>
 
@@ -264,6 +298,7 @@
 		<script src="search.js" onerror="__vnote('search.js')"></script>
 		<script src="app.js" onerror="__vnote('app.js')"></script>
 		<script src="bg.js" onerror="__vnote('bg.js')"></script>
+		<script src="preload.js" onerror="__vnote('preload.js')"></script>
 		<script src="games.js" onerror="__vnote('games.js')"></script>
 		<script>/*<![CDATA[*/
 			(function () {
