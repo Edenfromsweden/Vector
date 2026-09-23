@@ -324,7 +324,13 @@
 			...normZones(dk, DAKNUX, "Daknux", "Lumin"),
 			...normUgs(ug, "Lumin"),
 			...normCkv(ck, "Cherri"),
-		].filter((g) => g.file && g.name);
+		].filter((g) => g.file && g.name && !isJunk(g.name, g.file));
+	}
+
+	// Manifests carry a few non-game promo rows ("[!] COMMENTS", "[!] MORE FUN
+	// AT .gg/…") that link to Discord instead of a game. Drop them.
+	function isJunk(name, url) {
+		return /^\s*\[!\]/.test(name || "") || /discord\.gg/i.test(url || "");
 	}
 
 	async function loadAll() {
