@@ -289,9 +289,19 @@ body {
 }
 
 .mark {
-	filter: drop-shadow(0 14px 34px rgba(100, 149, 237, 0.4))
-		drop-shadow(0 6px 18px rgba(124, 58, 237, 0.45));
+	filter: drop-shadow(0 14px 34px rgba(var(--aur-2), 0.4))
+		drop-shadow(0 6px 18px rgba(var(--aur-0), 0.45));
 	animation: float 6s ease-in-out infinite;
+}
+
+/* Logo gradients follow the theme accent (overrides the inline stop-color). */
+.mark stop:first-child,
+.vbrand stop:first-child {
+	stop-color: var(--violet-soft);
+}
+.mark stop:last-child,
+.vbrand stop:last-child {
+	stop-color: var(--cornflower-soft);
 }
 
 @keyframes float {
@@ -313,7 +323,6 @@ body {
 	background: linear-gradient(
 		120deg,
 		var(--violet-soft) 0%,
-		#c4b5fd 30%,
 		var(--cornflower-soft) 100%
 	);
 	-webkit-background-clip: text;
@@ -552,7 +561,7 @@ footer a:hover {
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
-	filter: drop-shadow(0 3px 10px rgba(100, 149, 237, 0.5));
+	filter: drop-shadow(0 3px 10px rgba(var(--aur-2), 0.5));
 }
 
 .vtabs {
