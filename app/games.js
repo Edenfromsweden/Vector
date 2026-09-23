@@ -58,13 +58,29 @@
 
 	let games = [];
 
+	// Source filter + text search over the grid. "All" shows everything; the
+	// other values match a game's `source` tag (Local / GNMath / Lumin / Cherri).
+	let currentSource = "All";
+	let currentSearch = "";
+	const searchEl = document.getElementById("games-search");
+	const filtersEl = document.getElementById("games-filters");
+
 	function fileName(path) {
 		return path.split("/").pop();
 	}
 
+	function visibleGames() {
+		const q = currentSearch.trim().toLowerCase();
+		return games.filter(
+			(g) =>
+				(currentSource === "All" || g.source === currentSource) &&
+				(!q || g.name.toLowerCase().includes(q))
+		);
+	}
+
 	function render() {
 		const favs = getFavs();
-		const sorted = games.slice().sort((a, b) => {
+		const sorted = visibleGames().sort((a, b) => {
 			const fa = favs.includes(a.id),
 				fb = favs.includes(b.id);
 			if (fa !== fb) return fa ? -1 : 1;
@@ -179,6 +195,21 @@
 		});
 	if (vBack) vBack.addEventListener("click", closeGame);
 
+	if (searchEl)
+		searchEl.addEventListener("input", () => {
+			currentSearch = searchEl.value;
+			render();
+		});
+	if (filtersEl)
+		filtersEl.addEventListener("click", (e) => {
+			const btn = e.target.closest(".game-filter");
+			if (!btn) return;
+			currentSource = btn.dataset.source || "All";
+			for (const b of filtersEl.querySelectorAll(".game-filter"))
+				b.classList.toggle("on", b === btn);
+			render();
+		});
+
 	/* Extra game collections, fetched from third-party CDNs at runtime and merged
 	 * into the same grid as the local games. Each source is normalized to the
 	 * {id, name, file, icon} shape the grid already uses, so they render and play
@@ -222,7 +253,8 @@
 	}
 
 	// GNMath and Daknux share a manifest shape: {url, title/name, cover}.
-	function normZones(data, c, source) {
+	// `idPrefix` keeps ids unique per repo; `source` is the filter label shown.
+	function normZones(data, c, idPrefix, source) {
 		return (Array.isArray(data) ? data : []).map((g) => {
 			const u = clean(g.url);
 			const file = u.includes(".")
@@ -230,15 +262,16 @@
 				: `${c.html}/${u}/index.html`;
 			const name = g.title || g.name || u;
 			return {
-				id: `${source}:${name}`,
+				id: `${idPrefix}:${name}`,
 				name,
 				file,
 				icon: g.cover ? `${c.cover}/${clean(g.cover)}` : null,
+				source,
 			};
 		});
 	}
 
-	function normUgs(data) {
+	function normUgs(data, source) {
 		return (Array.isArray(data) ? data : []).map((g) => {
 			const raw = g.url || "";
 			let base = UGS.h1;
@@ -258,11 +291,11 @@
 			if (file && !file.startsWith("http")) file = `${base}/${clean(file)}`;
 
 			const name = g.title || g.name || raw;
-			return { id: `UGS:${name}`, name, file, icon: cover || null };
+			return { id: `UGS:${name}`, name, file, icon: cover || null, source };
 		});
 	}
 
-	function normCkv(data) {
+	function normCkv(data, source) {
 		return (Array.isArray(data) ? data : []).map((g) => {
 			const raw = g.url || "";
 			const img = g.img || g.cover || "";
@@ -272,10 +305,13 @@
 				name,
 				file: raw.startsWith("http") ? raw : `${CKV_BASE}/${clean(raw)}`,
 				icon: img ? `${CKV_BASE}/${clean(img)}` : null,
+				source,
 			};
 		});
 	}
 
+	// Source labels used by the filter chips. GNMath is its own; UGS + Daknux are
+	// grouped under "Lumin"; CKV (cherrigames) is "Cherri".
 	async function loadCollections() {
 		const [gn, dk, ug, ck] = await Promise.all([
 			fetchJSON(GN.api),
@@ -284,10 +320,10 @@
 			fetchJSON(`${CKV_BASE}/ckv.json`),
 		]);
 		return [
-			...normZones(gn, GN, "GNMath"),
-			...normZones(dk, DAKNUX, "Daknux"),
-			...normUgs(ug),
-			...normCkv(ck),
+			...normZones(gn, GN, "GNMath", "GNMath"),
+			...normZones(dk, DAKNUX, "Daknux", "Lumin"),
+			...normUgs(ug, "Lumin"),
+			...normCkv(ck, "Cherri"),
 		].filter((g) => g.file && g.name);
 	}
 
@@ -295,7 +331,10 @@
 		try {
 			const r = await fetch("games.json", { cache: "no-store" });
 			const list = r.ok ? await r.json() : [];
-			games = Array.isArray(list) ? list : [];
+			games = (Array.isArray(list) ? list : []).map((g) => ({
+				...g,
+				source: "Local",
+			}));
 		} catch {
 			games = [];
 		}
