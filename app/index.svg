@@ -199,9 +199,7 @@
 		</main>
 
 		<footer>
-			<span class="pulse" aria-hidden="true"></span>
-			<span class="muted">running on your own Cloudflare edge</span>
-			<a href="credits.html">credits</a>
+			<span class="muted">made by eden</span>
 		</footer>
 
 		<!-- Games panel -->
