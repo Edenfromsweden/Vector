@@ -1,6 +1,6 @@
 "use strict";
 
-/* Games section: reads games.json, renders a grid, plays games in an overlay,
+/* Games section: loads the Lumin (Daknux) collection, renders a grid, plays
  * lets you download a game's HTML, and stores favorites in a cookie.
  *
  * The player iframe (#gv-frame) is `credentialless`, which is what lets it be
@@ -58,12 +58,9 @@
 
 	let games = [];
 
-	// Source filter + text search over the grid. "All" shows everything; the
-	// other values match a game's `source` tag (Local / Lumin).
-	let currentSource = "All";
+	// Text search over the grid.
 	let currentSearch = "";
 	const searchEl = document.getElementById("games-search");
-	const filtersEl = document.getElementById("games-filters");
 
 	function fileName(path) {
 		return path.split("/").pop();
@@ -71,11 +68,7 @@
 
 	function visibleGames() {
 		const q = currentSearch.trim().toLowerCase();
-		return games.filter(
-			(g) =>
-				(currentSource === "All" || g.source === currentSource) &&
-				(!q || g.name.toLowerCase().includes(q))
-		);
+		return games.filter((g) => !q || g.name.toLowerCase().includes(q));
 	}
 
 	function render() {
@@ -200,21 +193,10 @@
 			currentSearch = searchEl.value;
 			render();
 		});
-	if (filtersEl)
-		filtersEl.addEventListener("click", (e) => {
-			const btn = e.target.closest(".game-filter");
-			if (!btn) return;
-			currentSource = btn.dataset.source || "All";
-			for (const b of filtersEl.querySelectorAll(".game-filter"))
-				b.classList.toggle("on", b === btn);
-			render();
-		});
 
-	/* Extra game collections, fetched from third-party CDNs at runtime and merged
-	 * into the same grid as the local games. Each source is normalized to the
-	 * {id, name, file, icon} shape the grid already uses, so they render and play
-	 * through the existing card + credentialless-iframe player. A source that
-	 * fails or times out is skipped; the local games always render first. */
+	/* Games are fetched from the Lumin (Daknux) collection at runtime and
+	 * normalized to the {id, name, file, icon} shape the grid uses, so they render
+	 * and play through the card + credentialless-iframe player. */
 	const clean = (p) =>
 		!p
 			? ""
@@ -275,30 +257,11 @@
 
 	async function loadAll() {
 		try {
-			const r = await fetch("games.json", { cache: "no-store" });
-			const list = r.ok ? await r.json() : [];
-			games = (Array.isArray(list) ? list : []).map((g) => ({
-				...g,
-				source: "Local",
-			}));
+			games = await loadCollections();
 		} catch {
 			games = [];
 		}
-		render(); // local games show immediately
-
-		try {
-			const extra = await loadCollections();
-			const seen = new Set(games.map((g) => g.id));
-			for (const g of extra) {
-				if (!seen.has(g.id)) {
-					seen.add(g.id);
-					games.push(g);
-				}
-			}
-			render(); // re-render with the collections merged in
-		} catch {
-			/* keep whatever local games rendered */
-		}
+		render();
 	}
 
 	loadAll();
