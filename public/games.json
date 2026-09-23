@@ -1,9 +1,63 @@
 [
   {
+    "id": "FNF",
+    "name": "FNF",
+    "file": "games/FNF.html",
+    "icon": "https://cdn.jsdelivr.net/gh/Entraptadoeztechnology/fridayfunk@09fdd5f1fa4ddb304dff7bae6f6af49eda664e8f/favicon.png"
+  },
+  {
+    "id": "FNF_17_Bucks_Floor_1",
+    "name": "FNF 17 Bucks Floor 1",
+    "file": "games/FNF_17_Bucks_Floor_1.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/17bucks/favicon.png"
+  },
+  {
+    "id": "FNF_AKAGE",
+    "name": "FNF AKAGE",
+    "file": "games/FNF_AKAGE.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf@main/akage/favicon.png"
+  },
+  {
+    "id": "FNF_B_Sides",
+    "name": "FNF B Sides",
+    "file": "games/FNF_B_Sides.html",
+    "icon": "https://cdn.jsdelivr.net/favicon.png"
+  },
+  {
+    "id": "FNF_Below_The_Depths",
+    "name": "FNF Below The Depths",
+    "file": "games/FNF_Below_The_Depths.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/below-depths/favicon.png"
+  },
+  {
+    "id": "FNF_Chaos_Nightmare_Sonic_Vs_Fleetway",
+    "name": "FNF Chaos Nightmare Sonic Vs Fleetway",
+    "file": "games/FNF_Chaos_Nightmare_Sonic_Vs_Fleetway.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/fleetway/favicon.png"
+  },
+  {
     "id": "FNF_City_Funk",
     "name": "FNF City Funk",
     "file": "games/FNF_City_Funk.html",
     "icon": "https://cdn.jsdelivr.net/gh/iamthegamesofsprunk/fnf@main/cityfunk/favicon.png"
+  },
+  {
+    "id": "FNF_Creepypasta_JP",
+    "name": "FNF Creepypasta JP",
+    "file": "games/FNF_Creepypasta_JP.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf@00d21c48bb912e5b6b3373ca21c793c135aae5d8/yokai/favicon.png"
+  },
+  {
+    "id": "FNF_D_Sides",
+    "name": "FNF D Sides",
+    "file": "games/FNF_D_Sides.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@f9179ae13bdc17ffe99a2d942b11971c8cf421d4/d-sides/favicon.png"
+  },
+  {
+    "id": "FNF_Darkness_Takeover",
+    "name": "FNF Darkness Takeover",
+    "file": "games/FNF_Darkness_Takeover.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/livediesmos/darkness-takeover/favicon.png"
   },
   {
     "id": "FNF_DDTO_Plus",
@@ -12,10 +66,94 @@
     "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/doki-takeover-plus/favicon.png"
   },
   {
+    "id": "FNF_Drop_and_Roll_but_Playable",
+    "name": "FNF Drop and Roll but Playable",
+    "file": "games/FNF_Drop_and_Roll_but_Playable.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/drop-and-roll/favicon.png"
+  },
+  {
+    "id": "FNF_FIRE_IN_THE_HOLE_Lobotomy_Dash_Funkin",
+    "name": "FNF FIRE IN THE HOLE Lobotomy Dash Funkin",
+    "file": "games/FNF_FIRE_IN_THE_HOLE_Lobotomy_Dash_Funkin.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/lobotomy/favicon.png"
+  },
+  {
+    "id": "FNF_Gumballs",
+    "name": "FNF Gumballs",
+    "file": "games/FNF_Gumballs.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/images@9ef355430f540158e43461a9aba4908bb1a78d8e/gumballs/favicon.png"
+  },
+  {
+    "id": "FNF_Heartbreak_Havoc_Vs_Sky_REDUX",
+    "name": "FNF Heartbreak Havoc Vs Sky REDUX",
+    "file": "games/FNF_Heartbreak_Havoc_Vs_Sky_REDUX.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf@main/redux/favicon.png"
+  },
+  {
+    "id": "FNF_Indie_Cross",
+    "name": "FNF Indie Cross",
+    "file": "games/FNF_Indie_Cross.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnfmods/indie/favicon.png"
+  },
+  {
+    "id": "FNF_Jeffys_Endless_Aethos",
+    "name": "FNF Jeffys Endless Aethos",
+    "file": "games/FNF_Jeffys_Endless_Aethos.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/aethos/favicon.png"
+  },
+  {
+    "id": "FNF_Marios_Madness",
+    "name": "FNF Marios Madness",
+    "file": "games/FNF_Marios_Madness.html",
+    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/diesmosfilehost@8679c0fe47a99f5657f04958fd06c5abdaa4a6b9/MM/favicon.png"
+  },
+  {
+    "id": "FNF_Mistful_Crimson_Morning_Reboot",
+    "name": "FNF Mistful Crimson Morning Reboot",
+    "file": "games/FNF_Mistful_Crimson_Morning_Reboot.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf/mcm/favicon.png"
+  },
+  {
+    "id": "FNF_Pibby_Apocalypse",
+    "name": "FNF Pibby Apocalypse",
+    "file": "games/FNF_Pibby_Apocalypse.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/maths/pibby2/favicon.png"
+  },
+  {
+    "id": "FNF_Rev_Mixed",
+    "name": "FNF Rev Mixed",
+    "file": "games/FNF_Rev_Mixed.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/rev-mixed/favicon.png"
+  },
+  {
+    "id": "FNF_Sarventes_Mid_Fight_Masses",
+    "name": "FNF Sarventes Mid Fight Masses",
+    "file": "games/FNF_Sarventes_Mid_Fight_Masses.html",
+    "icon": "https://cdn.jsdelivr.net/favicon.png"
+  },
+  {
+    "id": "FNF_Sonic_Legacy",
+    "name": "FNF Sonic Legacy",
+    "file": "games/FNF_Sonic_Legacy.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf/legacy/favicon.png"
+  },
+  {
     "id": "FNF_Sprunkin",
     "name": "FNF Sprunkin",
     "file": "games/FNF_Sprunkin.html",
     "icon": "https://cdn.jsdelivr.net/gh/iamthegamesofsprunk/funky@main/sprunki/favicon.png"
+  },
+  {
+    "id": "FNF_Sunday_Night_Suicide_Rookies_Edition",
+    "name": "FNF Sunday Night Suicide Rookies Edition",
+    "file": "games/FNF_Sunday_Night_Suicide_Rookies_Edition.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/sunday-rookie/favicon.png"
+  },
+  {
+    "id": "FNF_TWIDDLEFINGER",
+    "name": "FNF TWIDDLEFINGER",
+    "file": "games/FNF_TWIDDLEFINGER.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnfmods/twiddlefinger/favicon.png"
   },
   {
     "id": "FNF_vs_BFDI26",
@@ -30,16 +168,46 @@
     "icon": "https://cdn.jsdelivr.net/gh/FirePlayz132/Fnf_Bob.s_onslaught/favicon.png"
   },
   {
+    "id": "FNF_vs_BOPCITY",
+    "name": "FNF vs BOPCITY",
+    "file": "games/FNF_vs_BOPCITY.html",
+    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/bop/favicon.png"
+  },
+  {
     "id": "FNF_vs_Bside",
     "name": "FNF vs Bside",
     "file": "games/FNF_vs_Bside.html",
     "icon": "https://quantil.jsdelivr.net/favicon.png"
   },
   {
+    "id": "FNF_vs_Carol_V2",
+    "name": "FNF vs Carol V2",
+    "file": "games/FNF_vs_Carol_V2.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/carol-v2/favicon.png"
+  },
+  {
+    "id": "FNF_Vs_Cyber_Sensation",
+    "name": "FNF Vs Cyber Sensation",
+    "file": "games/FNF_Vs_Cyber_Sensation.html",
+    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/diesmosfilehost@8679c0fe47a99f5657f04958fd06c5abdaa4a6b9/cyber/favicon.png"
+  },
+  {
     "id": "FNF_vs_Garcello",
     "name": "FNF vs Garcello",
     "file": "games/FNF_vs_Garcello.html",
     "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/maths@19a7910572966b9604b81bf6e9b85cacacc785ab/garcello/favicon.png"
+  },
+  {
+    "id": "FNF_Vs_Hatsune_Miku",
+    "name": "FNF Vs Hatsune Miku",
+    "file": "games/FNF_Vs_Hatsune_Miku.html",
+    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/miku/favicon.png"
+  },
+  {
+    "id": "FNF_VS_Henry_Stickmin_V4",
+    "name": "FNF VS Henry Stickmin V4",
+    "file": "games/FNF_VS_Henry_Stickmin_V4.html",
+    "icon": "https://cdn.jsdelivr.net/gh/genizymath/fnfm@main/henry-stickman/favicon.png"
   },
   {
     "id": "FNF_vs_Hex",
@@ -54,10 +222,40 @@
     "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf@00d21c48bb912e5b6b3373ca21c793c135aae5d8/hits/favicon.png"
   },
   {
+    "id": "FNF_vs_Hypno_Lullaby",
+    "name": "FNF vs Hypno Lullaby",
+    "file": "games/FNF_vs_Hypno_Lullaby.html",
+    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/lullaby/favicon.png"
+  },
+  {
     "id": "FNF_Vs_Hypnos_Lullaby_v2",
     "name": "FNF Vs Hypnos Lullaby v2",
     "file": "games/FNF_Vs_Hypnos_Lullaby_v2.html",
     "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/hypno-v2/favicon.png"
+  },
+  {
+    "id": "FNF_VS_Impostor_Alternated",
+    "name": "FNF VS Impostor Alternated",
+    "file": "games/FNF_VS_Impostor_Alternated.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/alternated/favicon.png"
+  },
+  {
+    "id": "FNF_VS_Impostor_B_Sides",
+    "name": "FNF VS Impostor B Sides",
+    "file": "games/FNF_VS_Impostor_B_Sides.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/imposter-bside/favicon.png"
+  },
+  {
+    "id": "FNF_VS_Impostor_v4",
+    "name": "FNF VS Impostor v4",
+    "file": "games/FNF_VS_Impostor_v4.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/imposter-v4%20copy/favicon.png"
+  },
+  {
+    "id": "FNF_VS_KAPI",
+    "name": "FNF VS KAPI",
+    "file": "games/FNF_VS_KAPI.html",
+    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/kapi/favicon.png"
   },
   {
     "id": "FNF_vs_Lullaby",
@@ -70,6 +268,12 @@
     "name": "FNF vs Mario",
     "file": "games/FNF_vs_Mario.html",
     "icon": "https://quantil.jsdelivr.net/gh/mll-enh/diesmosfilehost@8679c0fe47a99f5657f04958fd06c5abdaa4a6b9/MM/favicon.png"
+  },
+  {
+    "id": "FNF_VS_Mario_Ultra_Rebooted",
+    "name": "FNF VS Mario Ultra Rebooted",
+    "file": "games/FNF_VS_Mario_Ultra_Rebooted.html",
+    "icon": "https://cdn.jsdelivr.net/gh/genizymath/fnfm@main/mario/favicon.png"
   },
   {
     "id": "FNF_vs_Mid_Fight",
@@ -88,6 +292,12 @@
     "name": "FNF vs Neo",
     "file": "games/FNF_vs_Neo.html",
     "icon": "https://quantil.jsdelivr.net/favicon.png"
+  },
+  {
+    "id": "FNF_vs_Nonsense",
+    "name": "FNF vs Nonsense",
+    "file": "games/FNF_vs_Nonsense.html",
+    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/nonsence/favicon.png"
   },
   {
     "id": "FNF_vs_Ourple",
@@ -114,6 +324,24 @@
     "icon": "https://quantil.jsdelivr.net/gh/waycrosspublicmedia/fnf/qt/favicon.png"
   },
   {
+    "id": "FNF_VS_Seeks_Cool_Deltarune",
+    "name": "FNF VS Seeks Cool Deltarune",
+    "file": "games/FNF_VS_Seeks_Cool_Deltarune.html",
+    "icon": "https://cdn.jsdelivr.net/gh/samtheskeleton/fnf-mods-v2@main/Vs.%20Seek's%20Cool%20Deltarune%20Mod/favicon.png"
+  },
+  {
+    "id": "FNF_vs_Shaggy",
+    "name": "FNF vs Shaggy",
+    "file": "games/FNF_vs_Shaggy.html",
+    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/shaggy/favicon.png"
+  },
+  {
+    "id": "FNF_vs_Shucks_v2",
+    "name": "FNF vs Shucks v2",
+    "file": "games/FNF_vs_Shucks_v2.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/shucks-v2/favicon.png"
+  },
+  {
     "id": "FNF_vs_Sky",
     "name": "FNF vs Sky",
     "file": "games/FNF_vs_Sky.html",
@@ -138,6 +366,24 @@
     "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/sonic-exe-4/favicon.png"
   },
   {
+    "id": "FNF_vs_Sunday_Remastered_HD",
+    "name": "FNF vs Sunday Remastered HD",
+    "file": "games/FNF_vs_Sunday_Remastered_HD.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@72c8d4c250ac08d604f1c928274e52373d998fad/sunday-hd/favicon.png"
+  },
+  {
+    "id": "FNF_VS_Super_Mario_Bros_Funk_Mix_DX",
+    "name": "FNF VS Super Mario Bros Funk Mix DX",
+    "file": "games/FNF_VS_Super_Mario_Bros_Funk_Mix_DX.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/smb-game-over/favicon.png"
+  },
+  {
+    "id": "FNF_vs_Tabi",
+    "name": "FNF vs Tabi",
+    "file": "games/FNF_vs_Tabi.html",
+    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@latest/tabi/favicon.png"
+  },
+  {
     "id": "FNF_vs_Tails",
     "name": "FNF vs Tails",
     "file": "games/FNF_vs_Tails.html",
@@ -150,273 +396,27 @@
     "icon": "https://quantil.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/tricky/favicon.png"
   },
   {
-    "id": "Friday_Night_Funkin",
-    "name": "Friday Night Funkin",
-    "file": "games/Friday_Night_Funkin.html",
-    "icon": "https://cdn.jsdelivr.net/gh/Entraptadoeztechnology/fridayfunk@09fdd5f1fa4ddb304dff7bae6f6af49eda664e8f/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_17_Bucks_Floor_1",
-    "name": "Friday Night Funkin 17 Bucks Floor 1",
-    "file": "games/Friday_Night_Funkin_17_Bucks_Floor_1.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/17bucks/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_AKAGE",
-    "name": "Friday Night Funkin AKAGE",
-    "file": "games/Friday_Night_Funkin_AKAGE.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf@main/akage/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_B_Sides",
-    "name": "Friday Night Funkin B Sides",
-    "file": "games/Friday_Night_Funkin_B_Sides.html",
-    "icon": "https://cdn.jsdelivr.net/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Below_The_Depths",
-    "name": "Friday Night Funkin Below The Depths",
-    "file": "games/Friday_Night_Funkin_Below_The_Depths.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/below-depths/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Chaos_Nightmare_Sonic_Vs_Fleetway",
-    "name": "Friday Night Funkin Chaos Nightmare Sonic Vs Fleetway",
-    "file": "games/Friday_Night_Funkin_Chaos_Nightmare_Sonic_Vs_Fleetway.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/fleetway/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Creepypasta_JP",
-    "name": "Friday Night Funkin Creepypasta JP",
-    "file": "games/Friday_Night_Funkin_Creepypasta_JP.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf@00d21c48bb912e5b6b3373ca21c793c135aae5d8/yokai/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_D_Sides",
-    "name": "Friday Night Funkin D Sides",
-    "file": "games/Friday_Night_Funkin_D_Sides.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@f9179ae13bdc17ffe99a2d942b11971c8cf421d4/d-sides/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Darkness_Takeover",
-    "name": "Friday Night Funkin Darkness Takeover",
-    "file": "games/Friday_Night_Funkin_Darkness_Takeover.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/livediesmos/darkness-takeover/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Drop_and_Roll_but_Playable",
-    "name": "Friday Night Funkin Drop and Roll but Playable",
-    "file": "games/Friday_Night_Funkin_Drop_and_Roll_but_Playable.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/drop-and-roll/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_FIRE_IN_THE_HOLE_Lobotomy_Dash_Funkin",
-    "name": "Friday Night Funkin FIRE IN THE HOLE Lobotomy Dash Funkin",
-    "file": "games/Friday_Night_Funkin_FIRE_IN_THE_HOLE_Lobotomy_Dash_Funkin.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/lobotomy/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Gumballs",
-    "name": "Friday Night Funkin Gumballs",
-    "file": "games/Friday_Night_Funkin_Gumballs.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/images@9ef355430f540158e43461a9aba4908bb1a78d8e/gumballs/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Heartbreak_Havoc_Vs_Sky_REDUX",
-    "name": "Friday Night Funkin Heartbreak Havoc Vs Sky REDUX",
-    "file": "games/Friday_Night_Funkin_Heartbreak_Havoc_Vs_Sky_REDUX.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf@main/redux/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Indie_Cross",
-    "name": "Friday Night Funkin Indie Cross",
-    "file": "games/Friday_Night_Funkin_Indie_Cross.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnfmods/indie/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Jeffys_Endless_Aethos",
-    "name": "Friday Night Funkin Jeffys Endless Aethos",
-    "file": "games/Friday_Night_Funkin_Jeffys_Endless_Aethos.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/aethos/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Marios_Madness",
-    "name": "Friday Night Funkin Marios Madness",
-    "file": "games/Friday_Night_Funkin_Marios_Madness.html",
-    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/diesmosfilehost@8679c0fe47a99f5657f04958fd06c5abdaa4a6b9/MM/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Mistful_Crimson_Morning_Reboot",
-    "name": "Friday Night Funkin Mistful Crimson Morning Reboot",
-    "file": "games/Friday_Night_Funkin_Mistful_Crimson_Morning_Reboot.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf/mcm/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Pibby_Apocalypse",
-    "name": "Friday Night Funkin Pibby Apocalypse",
-    "file": "games/Friday_Night_Funkin_Pibby_Apocalypse.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/maths/pibby2/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Rev_Mixed",
-    "name": "Friday Night Funkin Rev Mixed",
-    "file": "games/Friday_Night_Funkin_Rev_Mixed.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/rev-mixed/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Sarventes_Mid_Fight_Masses",
-    "name": "Friday Night Funkin Sarventes Mid Fight Masses",
-    "file": "games/Friday_Night_Funkin_Sarventes_Mid_Fight_Masses.html",
-    "icon": "https://cdn.jsdelivr.net/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Sonic_Legacy",
-    "name": "Friday Night Funkin Sonic Legacy",
-    "file": "games/Friday_Night_Funkin_Sonic_Legacy.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf/legacy/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Sunday_Night_Suicide_Rookies_Edition",
-    "name": "Friday Night Funkin Sunday Night Suicide Rookies Edition",
-    "file": "games/Friday_Night_Funkin_Sunday_Night_Suicide_Rookies_Edition.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/sunday-rookie/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_TWIDDLEFINGER",
-    "name": "Friday Night Funkin TWIDDLEFINGER",
-    "file": "games/Friday_Night_Funkin_TWIDDLEFINGER.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnfmods/twiddlefinger/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_BOPCITY",
-    "name": "Friday Night Funkin vs BOPCITY",
-    "file": "games/Friday_Night_Funkin_vs_BOPCITY.html",
-    "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/waycrosspublicmedia.github.io/bop/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Carol_V2",
-    "name": "Friday Night Funkin vs Carol V2",
-    "file": "games/Friday_Night_Funkin_vs_Carol_V2.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/carol-v2/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Vs_Cyber_Sensation",
-    "name": "Friday Night Funkin Vs Cyber Sensation",
-    "file": "games/Friday_Night_Funkin_Vs_Cyber_Sensation.html",
-    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/diesmosfilehost@8679c0fe47a99f5657f04958fd06c5abdaa4a6b9/cyber/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_Vs_Hatsune_Miku",
-    "name": "Friday Night Funkin Vs Hatsune Miku",
-    "file": "games/Friday_Night_Funkin_Vs_Hatsune_Miku.html",
-    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/miku/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_Henry_Stickmin_V4",
-    "name": "Friday Night Funkin VS Henry Stickmin V4",
-    "file": "games/Friday_Night_Funkin_VS_Henry_Stickmin_V4.html",
-    "icon": "https://cdn.jsdelivr.net/gh/genizymath/fnfm@main/henry-stickman/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Hypno_Lullaby",
-    "name": "Friday Night Funkin vs Hypno Lullaby",
-    "file": "games/Friday_Night_Funkin_vs_Hypno_Lullaby.html",
-    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/lullaby/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_Impostor_Alternated",
-    "name": "Friday Night Funkin VS Impostor Alternated",
-    "file": "games/Friday_Night_Funkin_VS_Impostor_Alternated.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/alternated/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_Impostor_B_Sides",
-    "name": "Friday Night Funkin VS Impostor B Sides",
-    "file": "games/Friday_Night_Funkin_VS_Impostor_B_Sides.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/imposter-bside/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_Impostor_v4",
-    "name": "Friday Night Funkin VS Impostor v4",
-    "file": "games/Friday_Night_Funkin_VS_Impostor_v4.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/imposter-v4%20copy/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_KAPI",
-    "name": "Friday Night Funkin VS KAPI",
-    "file": "games/Friday_Night_Funkin_VS_KAPI.html",
-    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/kapi/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_Mario_Ultra_Rebooted",
-    "name": "Friday Night Funkin VS Mario Ultra Rebooted",
-    "file": "games/Friday_Night_Funkin_VS_Mario_Ultra_Rebooted.html",
-    "icon": "https://cdn.jsdelivr.net/gh/genizymath/fnfm@main/mario/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Nonsense",
-    "name": "Friday Night Funkin vs Nonsense",
-    "file": "games/Friday_Night_Funkin_vs_Nonsense.html",
-    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/nonsence/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_Seeks_Cool_Deltarune",
-    "name": "Friday Night Funkin VS Seeks Cool Deltarune",
-    "file": "games/Friday_Night_Funkin_VS_Seeks_Cool_Deltarune.html",
-    "icon": "https://cdn.jsdelivr.net/gh/samtheskeleton/fnf-mods-v2@main/Vs.%20Seek's%20Cool%20Deltarune%20Mod/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Shaggy",
-    "name": "Friday Night Funkin vs Shaggy",
-    "file": "games/Friday_Night_Funkin_vs_Shaggy.html",
-    "icon": "https://cdn.jsdelivr.net/gh/mll-enh/die@fe0e5b08118dacdefc79f2b1427b283be80a9447/shaggy/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Shucks_v2",
-    "name": "Friday Night Funkin vs Shucks v2",
-    "file": "games/Friday_Night_Funkin_vs_Shucks_v2.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/shucks-v2/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Sunday_Remastered_HD",
-    "name": "Friday Night Funkin vs Sunday Remastered HD",
-    "file": "games/Friday_Night_Funkin_vs_Sunday_Remastered_HD.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@72c8d4c250ac08d604f1c928274e52373d998fad/sunday-hd/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_VS_Super_Mario_Bros_Funk_Mix_DX",
-    "name": "Friday Night Funkin VS Super Mario Bros Funk Mix DX",
-    "file": "games/Friday_Night_Funkin_VS_Super_Mario_Bros_Funk_Mix_DX.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/smb-game-over/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Tabi",
-    "name": "Friday Night Funkin vs Tabi",
-    "file": "games/Friday_Night_Funkin_vs_Tabi.html",
-    "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@latest/tabi/favicon.png"
-  },
-  {
-    "id": "Friday_Night_Funkin_vs_Undertale",
-    "name": "Friday Night Funkin vs Undertale",
-    "file": "games/Friday_Night_Funkin_vs_Undertale.html",
+    "id": "FNF_vs_Undertale",
+    "name": "FNF vs Undertale",
+    "file": "games/FNF_vs_Undertale.html",
     "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/undertale/favicon.png"
   },
   {
-    "id": "Friday_Night_Funkin_VS_Whitty",
-    "name": "Friday Night Funkin VS Whitty",
-    "file": "games/Friday_Night_Funkin_VS_Whitty.html",
+    "id": "FNF_VS_Whitty",
+    "name": "FNF VS Whitty",
+    "file": "games/FNF_VS_Whitty.html",
     "icon": "https://cdn.jsdelivr.net/favicon.png"
   },
   {
-    "id": "Friday_Night_Funkin_vs_Zardy",
-    "name": "Friday Night Funkin vs Zardy",
-    "file": "games/Friday_Night_Funkin_vs_Zardy.html",
+    "id": "FNF_vs_Zardy",
+    "name": "FNF vs Zardy",
+    "file": "games/FNF_vs_Zardy.html",
     "icon": "https://cdn.jsdelivr.net/gh/waycrosspublicmedia/fnf-mods@6b6680f79ab8c4e8349a920c2a240c5e7ee689ea/zardy/favicon.png"
   },
   {
-    "id": "Friday_Night_Funkin_Wednesdays_Infidelity",
-    "name": "Friday Night Funkin Wednesdays Infidelity",
-    "file": "games/Friday_Night_Funkin_Wednesdays_Infidelity.html",
+    "id": "FNF_Wednesdays_Infidelity",
+    "name": "FNF Wednesdays Infidelity",
+    "file": "games/FNF_Wednesdays_Infidelity.html",
     "icon": "https://cdn.jsdelivr.net/gh/bubbls/fnf-mods@main/wednesday-infedility/favicon.png"
   }
 ]
