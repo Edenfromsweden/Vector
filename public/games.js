@@ -179,14 +179,142 @@
 		});
 	if (vBack) vBack.addEventListener("click", closeGame);
 
-	fetch("games.json", { cache: "no-store" })
-		.then((r) => (r.ok ? r.json() : []))
-		.then((list) => {
-			games = Array.isArray(list) ? list : [];
-			render();
-		})
-		.catch(() => {
-			games = [];
-			render();
+	/* Extra game collections, fetched from third-party CDNs at runtime and merged
+	 * into the same grid as the local games. Each source is normalized to the
+	 * {id, name, file, icon} shape the grid already uses, so they render and play
+	 * through the existing card + credentialless-iframe player. A source that
+	 * fails or times out is skipped; the local games always render first. */
+	const clean = (p) =>
+		!p
+			? ""
+			: p
+					.replace(/%7BHTML_URL%7D\//gi, "")
+					.replace(/\{HTML_URL\}\//gi, "")
+					.replace(/%7BCOVER_URL%7D\//gi, "")
+					.replace(/\{COVER_URL\}\//gi, "")
+					.replace(/^\//, "");
+
+	const GN = {
+		api: "https://cdn.jsdelivr.net/gh/freebuisness/assets@main/zones.json",
+		cover: "https://cdn.jsdelivr.net/gh/freebuisness/covers@main",
+		html: "https://cdn.jsdelivr.net/gh/freebuisness/html@main",
+	};
+	const DAKNUX = {
+		api: "https://cdn.jsdelivr.net/gh/daknux/assets@latest/zones.json",
+		cover: "https://cdn.jsdelivr.net/gh/daknux/covers@main",
+		html: "https://cdn.jsdelivr.net/gh/daknux/html@main",
+	};
+	const UGS = {
+		api: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-json@main/games.json",
+		h1: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-1@main",
+		h2: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-2@main",
+		h3: "https://cdn.jsdelivr.net/gh/Sea-Math/ugs-3@main",
+	};
+	const CKV_BASE = "https://cdn.jsdelivr.net/gl/x8r/cherrigames@main";
+
+	async function fetchJSON(url) {
+		try {
+			const r = await fetch(url, { signal: AbortSignal.timeout(25000) });
+			return r.ok ? await r.json() : [];
+		} catch {
+			return [];
+		}
+	}
+
+	// GNMath and Daknux share a manifest shape: {url, title/name, cover}.
+	function normZones(data, c, source) {
+		return (Array.isArray(data) ? data : []).map((g) => {
+			const u = clean(g.url);
+			const file = u.includes(".")
+				? `${c.html}/${u}`
+				: `${c.html}/${u}/index.html`;
+			const name = g.title || g.name || u;
+			return {
+				id: `${source}:${name}`,
+				name,
+				file,
+				icon: g.cover ? `${c.cover}/${clean(g.cover)}` : null,
+			};
 		});
+	}
+
+	function normUgs(data) {
+		return (Array.isArray(data) ? data : []).map((g) => {
+			const raw = g.url || "";
+			let base = UGS.h1;
+			if (raw.includes("{HTML_URL2}") || g.repo === "ugs-2") base = UGS.h2;
+			else if (raw.includes("{HTML_URL3}") || g.repo === "ugs-3") base = UGS.h3;
+
+			let cover = (g.cover || g.image || "").replace(
+				/\{COVER_URL\}/g,
+				UGS.h1.replace("/ugs-1@main", "/ugs-covers@main")
+			);
+			if (cover && !cover.startsWith("http")) cover = `${UGS.h1}/${clean(cover)}`;
+
+			let file = raw
+				.replace(/\{HTML_URL1\}/g, UGS.h1)
+				.replace(/\{HTML_URL2\}/g, UGS.h2)
+				.replace(/\{HTML_URL3\}/g, UGS.h3);
+			if (file && !file.startsWith("http")) file = `${base}/${clean(file)}`;
+
+			const name = g.title || g.name || raw;
+			return { id: `UGS:${name}`, name, file, icon: cover || null };
+		});
+	}
+
+	function normCkv(data) {
+		return (Array.isArray(data) ? data : []).map((g) => {
+			const raw = g.url || "";
+			const img = g.img || g.cover || "";
+			const name = g.name || g.title || raw;
+			return {
+				id: `CKV:${name}`,
+				name,
+				file: raw.startsWith("http") ? raw : `${CKV_BASE}/${clean(raw)}`,
+				icon: img ? `${CKV_BASE}/${clean(img)}` : null,
+			};
+		});
+	}
+
+	async function loadCollections() {
+		const [gn, dk, ug, ck] = await Promise.all([
+			fetchJSON(GN.api),
+			fetchJSON(DAKNUX.api),
+			fetchJSON(UGS.api),
+			fetchJSON(`${CKV_BASE}/ckv.json`),
+		]);
+		return [
+			...normZones(gn, GN, "GNMath"),
+			...normZones(dk, DAKNUX, "Daknux"),
+			...normUgs(ug),
+			...normCkv(ck),
+		].filter((g) => g.file && g.name);
+	}
+
+	async function loadAll() {
+		try {
+			const r = await fetch("games.json", { cache: "no-store" });
+			const list = r.ok ? await r.json() : [];
+			games = Array.isArray(list) ? list : [];
+		} catch {
+			games = [];
+		}
+		render(); // local games show immediately
+
+		try {
+			const extra = await loadCollections();
+			const seen = new Set(games.map((g) => g.id));
+			for (const g of extra) {
+				if (!seen.has(g.id)) {
+					seen.add(g.id);
+					games.push(g);
+				}
+			}
+			render(); // re-render with the collections merged in
+		} catch {
+			/* keep whatever local games rendered */
+		}
+	}
+
+	loadAll();
 })();
