@@ -59,9 +59,21 @@
 	let games = [];
 	let loading = true;
 
-	// Text search over the grid.
+	// Render the grid a page at a time so ~400+ cards don't all build at once.
+	const PAGE_SIZE = 60;
+	let shown = PAGE_SIZE;
+
+	// Text search over the grid, remembered across opens.
+	const SEARCH_KEY = "vector_games_search";
 	let currentSearch = "";
 	const searchEl = document.getElementById("games-search");
+	const randomBtn = document.getElementById("games-random");
+	try {
+		currentSearch = localStorage.getItem(SEARCH_KEY) || "";
+		if (searchEl && currentSearch) searchEl.value = currentSearch;
+	} catch {
+		/* storage may be unavailable */
+	}
 
 	function fileName(path) {
 		return path.split("/").pop();
@@ -69,17 +81,19 @@
 
 	function visibleGames() {
 		const q = currentSearch.trim().toLowerCase();
-		return games.filter((g) => !q || g.name.toLowerCase().includes(q));
+		const favs = getFavs();
+		return games
+			.filter((g) => !q || g.name.toLowerCase().includes(q))
+			.sort((a, b) => {
+				const fa = favs.includes(a.id),
+					fb = favs.includes(b.id);
+				if (fa !== fb) return fa ? -1 : 1;
+				return a.name.localeCompare(b.name);
+			});
 	}
 
 	function render() {
-		const favs = getFavs();
-		const sorted = visibleGames().sort((a, b) => {
-			const fa = favs.includes(a.id),
-				fb = favs.includes(b.id);
-			if (fa !== fb) return fa ? -1 : 1;
-			return a.name.localeCompare(b.name);
-		});
+		const sorted = visibleGames();
 
 		grid.textContent = "";
 		if (!sorted.length) {
@@ -95,7 +109,8 @@
 		}
 		if (empty) empty.hidden = true;
 
-		for (const g of sorted) {
+		const page = sorted.slice(0, shown);
+		for (const g of page) {
 			const card = xel("div");
 			card.className = "game-card";
 
@@ -153,6 +168,18 @@
 			card.append(play, actions);
 			grid.appendChild(card);
 		}
+
+		if (sorted.length > shown) {
+			const more = xel("button");
+			more.className = "game-loadmore";
+			const remaining = sorted.length - shown;
+			more.textContent = `Load more (${remaining})`;
+			more.addEventListener("click", () => {
+				shown += PAGE_SIZE;
+				render();
+			});
+			grid.appendChild(more);
+		}
 	}
 
 	function openGame(g) {
@@ -204,7 +231,21 @@
 	if (searchEl)
 		searchEl.addEventListener("input", () => {
 			currentSearch = searchEl.value;
+			shown = PAGE_SIZE; // new query -> back to the first page
+			try {
+				localStorage.setItem(SEARCH_KEY, currentSearch);
+			} catch {
+				/* ignore */
+			}
 			render();
+		});
+
+	// "Surprise me": open a random game from the current (search-filtered) list.
+	if (randomBtn)
+		randomBtn.addEventListener("click", () => {
+			const pool = visibleGames();
+			if (!pool.length) return;
+			openGame(pool[Math.floor(Math.random() * pool.length)]);
 		});
 
 	// Escape closes the game player first, then the panel.

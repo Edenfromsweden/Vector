@@ -57,59 +57,48 @@ body {
 	-webkit-font-smoothing: antialiased;
 }
 
-/* Loading screen (preload.js). Covers the page on open, fades out when done. */
+/* Icon-preload indicator (preload.js): a small non-blocking chip at the bottom.
+   The site is fully usable while it warms game icons in the background. */
 #preloader {
 	position: fixed;
-	inset: 0;
+	left: 50%;
+	bottom: 18px;
+	transform: translateX(-50%);
 	z-index: 1000;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 24px;
-	background: linear-gradient(158deg, #140d2c 0%, #180f31 44%, #0b0817 100%);
+	max-width: calc(100vw - 32px);
 	transition:
 		opacity 0.4s ease,
-		visibility 0.4s ease;
+		visibility 0.4s ease,
+		transform 0.4s ease;
 }
 
 #preloader.done {
 	opacity: 0;
 	visibility: hidden;
+	transform: translate(-50%, 8px);
 	pointer-events: none;
 }
 
 .pl-inner {
-	width: 100%;
-	max-width: 360px;
 	display: flex;
-	flex-direction: column;
 	align-items: center;
-	gap: 18px;
-	text-align: center;
-}
-
-.pl-mark {
-	animation: pl-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes pl-pulse {
-	0%,
-	100% {
-		transform: translateY(0);
-		opacity: 1;
-	}
-	50% {
-		transform: translateY(-4px);
-		opacity: 0.75;
-	}
+	gap: 10px;
+	padding: 8px 10px 8px 14px;
+	border-radius: 999px;
+	background: rgba(13, 10, 30, 0.82);
+	border: 1px solid var(--border);
+	-webkit-backdrop-filter: blur(12px);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .pl-bar {
-	width: 100%;
-	height: 8px;
+	width: 90px;
+	height: 6px;
 	border-radius: 999px;
 	background: var(--surface-2);
 	overflow: hidden;
+	flex: none;
 }
 
 .pl-fill {
@@ -121,9 +110,9 @@ body {
 }
 
 .pl-status {
-	font-size: 13px;
+	font-size: 12px;
 	color: var(--muted);
-	max-width: 100%;
+	max-width: 46vw;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -131,22 +120,23 @@ body {
 
 .pl-skip {
 	font: inherit;
-	font-size: 12px;
-	color: var(--cornflower-soft);
-	background: var(--surface);
-	border: 1px solid var(--border);
-	padding: 6px 16px;
+	font-size: 15px;
+	line-height: 1;
+	color: var(--muted);
+	background: transparent;
+	border: 0;
+	width: 24px;
+	height: 24px;
 	border-radius: 999px;
 	cursor: pointer;
+	flex: none;
 	transition:
 		background 0.15s ease,
-		border-color 0.15s ease,
 		color 0.15s ease;
 }
 
 .pl-skip:hover {
 	background: var(--surface-2);
-	border-color: var(--border-focus);
 	color: var(--text);
 }
 
@@ -681,6 +671,30 @@ body.proxying #bg {
 	background: var(--surface-2);
 }
 
+.games-random {
+	flex: none;
+	font: inherit;
+	font-size: 13px;
+	color: var(--cornflower-soft);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	padding: 0 16px;
+	height: 40px;
+	border-radius: 12px;
+	cursor: pointer;
+	white-space: nowrap;
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.games-random:hover {
+	background: var(--surface-2);
+	border-color: var(--border-focus);
+	color: var(--text);
+}
+
 .games-filters {
 	display: flex;
 	flex-wrap: wrap;
@@ -716,6 +730,30 @@ body.proxying #bg {
 		var(--cornflower-soft)
 	);
 	border-color: transparent;
+}
+
+.game-loadmore {
+	grid-column: 1 / -1;
+	justify-self: center;
+	margin-top: 6px;
+	font: inherit;
+	font-size: 14px;
+	color: var(--cornflower-soft);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	padding: 10px 22px;
+	border-radius: 12px;
+	cursor: pointer;
+	transition:
+		background 0.15s ease,
+		border-color 0.15s ease,
+		color 0.15s ease;
+}
+
+.game-loadmore:hover {
+	background: var(--surface-2);
+	border-color: var(--border-focus);
+	color: var(--text);
 }
 
 .games-grid {
