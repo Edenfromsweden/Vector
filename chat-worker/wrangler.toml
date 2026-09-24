@@ -1,0 +1,26 @@
+# Vector chat backend. A Worker with a Durable Object per room.
+#
+# Deploy:
+#   cd chat-worker
+#   npx wrangler deploy
+#
+# Durable Objects require a Cloudflare paid (Workers Paid) plan. After deploy the
+# Worker is reachable at https://vector-chat.<your-subdomain>.workers.dev/ — or
+# put it on a custom domain (see the routes block below) and point chat.js at it.
+
+name = "vector-chat"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[[durable_objects.bindings]]
+name = "CHAT_ROOM"
+class_name = "ChatRoom"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["ChatRoom"]
+
+# Optional: expose it on a neutral custom domain on your zone (like the proxy
+# backend does), so it's as hard to block as the rest of the site. Uncomment and
+# set your own hostname, then re-deploy:
+# routes = [{ pattern = "chat.zilkcz.com", custom_domain = true }]
