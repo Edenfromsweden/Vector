@@ -1,12 +1,12 @@
 // The engine load is guarded so a failure here can't brick the site: if it
 // throws, fall through to the network so the shell still loads and can register
 // a fresh worker, instead of leaving a blank page only "clear site data" fixes.
-let scramjet = null;
+let engine = null;
 try {
 	importScripts("/scram/scramjet.all.js");
-	scramjet = new ($scramjetLoadWorker().ScramjetServiceWorker)();
+	engine = new ($scramjetLoadWorker().ScramjetServiceWorker)();
 } catch (err) {
-	// engine unavailable -> pass every request straight to the network
+	// unavailable -> pass every request straight to the network
 }
 
 // Take over immediately instead of waiting for every tab to close, so the
@@ -17,10 +17,10 @@ self.addEventListener("activate", (event) =>
 );
 
 async function handleRequest(event) {
-	if (scramjet) {
-		await scramjet.loadConfig();
-		if (scramjet.route(event)) {
-			return scramjet.fetch(event);
+	if (engine) {
+		await engine.loadConfig();
+		if (engine.route(event)) {
+			return engine.fetch(event);
 		}
 	}
 	return fetch(event.request);

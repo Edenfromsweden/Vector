@@ -310,10 +310,10 @@
 		);
 	}
 
-	// Manifests carry a few non-game promo rows ("[!] COMMENTS", "[!] MORE FUN
-	// AT .gg/…") that link to Discord instead of a game. Drop them.
+	// Manifests carry a few non-game promo rows ("[!] ...") that link out
+	// instead of pointing at a game. Drop them.
 	function isJunk(name, url) {
-		return /^\s*\[!\]/.test(name || "") || /discord\.gg/i.test(url || "");
+		return /^\s*\[!\]/.test(name || "") || /\.gg\//i.test(url || "");
 	}
 
 	async function loadAll() {

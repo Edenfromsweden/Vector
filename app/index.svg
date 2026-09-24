@@ -253,7 +253,7 @@
 			</div>
 		</div>
 
-		<!-- In-proxy browser shell: shown once you open a page -->
+		<!-- In-page view: shown once you open a page -->
 		<div id="vbar" aria-hidden="true">
 			<div class="vrow vrow-tabs">
 				<span class="vbrand" title="Vector" aria-hidden="true">

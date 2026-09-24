@@ -17,8 +17,7 @@ function search(input, template) {
 	try {
 		// input is a valid URL when https:// is added to the start:
 		// eg: example.com, example.com/test?q=param
-		// Default to https so we skip the http->https redirect hop that heavy
-		// sites (Discord, etc.) often fail on through the proxy.
+		// Default to https so we skip the http->https redirect hop.
 		const url = new URL(`https://${input}`);
 		// only if the hostname has a TLD/subdomain
 		if (url.hostname.includes(".")) return url.toString();

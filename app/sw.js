@@ -1,18 +1,13 @@
-// Service worker for the static shell. Imports the engine from this directory
-// (vendored under app/cdn/ with neutral names) and routes proxied requests
-// through it. The import path must match the copy map in build-svg-shell.mjs.
-//
-// The engine load is guarded: if it ever fails (e.g. a stale cached copy of
-// THIS worker pointing at engine files that a later release moved), we must not
-// let that brick the whole site. Falling through to the network keeps the shell
-// loading, which lets the page register the current worker and self-heal --
-// instead of a blank page that only a manual "clear site data" recovers.
-let scramjet = null;
+// Loads the engine from this folder and hands requests to it. The load is
+// guarded: if it fails (e.g. a stale cached copy pointing at files a later
+// release moved), fall through to the network so the shell still loads and can
+// register the current worker, instead of leaving a blank page.
+let engine = null;
 try {
 	importScripts("cdn/core/core.js");
-	scramjet = new ($scramjetLoadWorker().ScramjetServiceWorker)();
+	engine = new ($scramjetLoadWorker().ScramjetServiceWorker)();
 } catch (err) {
-	// engine unavailable -> pass every request straight to the network
+	// unavailable -> pass every request straight to the network
 }
 
 self.addEventListener("install", () => self.skipWaiting());
@@ -21,10 +16,10 @@ self.addEventListener("activate", (event) =>
 );
 
 async function handleRequest(event) {
-	if (scramjet) {
-		await scramjet.loadConfig();
-		if (scramjet.route(event)) {
-			return scramjet.fetch(event);
+	if (engine) {
+		await engine.loadConfig();
+		if (engine.route(event)) {
+			return engine.fetch(event);
 		}
 	}
 	return fetch(event.request);

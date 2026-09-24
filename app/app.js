@@ -1,17 +1,11 @@
 "use strict";
 
-/* Proxy + tab-bar logic for the CDN / static-host shell.
- * Everything the proxy needs -- engine, bare-mux worker, libcurl, sw.js -- is
- * vendored under this directory (app/cdn/) and referenced RELATIVE to it, with
- * no leading "/" and no "../". That resolves the same whether the host serves
- * the whole repo (jsDelivr: .../app/) or roots the site at this folder
- * (Cloudflare Pages: /). The Scramjet route prefix sits INSIDE the SW scope. */
+/* Tab-bar and view logic. Assets live under this folder (cdn/) and are
+ * referenced relative to it, so the same files work whether the host serves the
+ * whole repo (.../app/) or roots the site here (/). */
 
 const here = new URL("./", location.href); // the folder this document lives in
-// A neutral route prefix (not "/service/" or "/scram/") so the proxy path
-// carries no recognizable proxy signature. Must sit inside the SW scope.
-const prefix = new URL("./view/", here).pathname;
-// Engine vendored under app/cdn/ with neutral names (see build-svg-shell.mjs).
+const prefix = new URL("./view/", here).pathname; // must sit inside the SW scope
 const engineURL = (p) => new URL("cdn/" + p, here).href;
 
 const xel =
@@ -65,7 +59,7 @@ const btnNew = document.getElementById("vnewtab");
 
 const { ScramjetController } = $scramjetLoadController();
 
-const scramjet = new ScramjetController({
+const engine = new ScramjetController({
 	prefix,
 	files: {
 		wasm: engineURL("core/core.wasm"),
@@ -73,12 +67,8 @@ const scramjet = new ScramjetController({
 		sync: engineURL("core/sync.js"),
 	},
 	flags: { serviceworkers: true },
-	// Obfuscate the proxied URL. The default codec is encodeURIComponent, which
-	// leaves the target host readable in the path (/service/https://discord.com/…),
-	// so a URL-filtering extension matches it and shows its block page. base64url
-	// makes the path an opaque blob with no hostname in it. These functions are
-	// serialized and re-run inside the service worker, so they must be
-	// self-contained (no references to anything outside).
+	// Encode the path segment as base64url. Serialized and re-run inside the
+	// service worker, so these must be self-contained.
 	codec: {
 		encode: (str) => {
 			if (!str) return str;
@@ -96,7 +86,7 @@ const scramjet = new ScramjetController({
 	},
 });
 
-scramjet.init();
+engine.init();
 
 const connection = new BareMux.BareMuxConnection(engineURL("mux/worker.js"));
 const transportPath = engineURL("net/net.mjs");
@@ -105,14 +95,14 @@ let transportReady = false;
 async function ensureTransport() {
 	await registerSW();
 	if (transportReady) return;
-	const wispUrl =
-		window.WISP_URL ||
+	const epUrl =
+		window.EP_URL ||
 		(location.protocol === "https:" ? "wss" : "ws") +
 			"://" +
 			location.host +
-			"/wisp/";
+			"/ws/";
 	if ((await connection.getTransport()) !== transportPath) {
-		await connection.setTransport(transportPath, [{ websocket: wispUrl }]);
+		await connection.setTransport(transportPath, [{ websocket: epUrl }]);
 	}
 	transportReady = true;
 }
@@ -124,7 +114,7 @@ let active = null;
 function setChrome(on) {
 	bar.classList.toggle("show", on);
 	framesEl.classList.toggle("show", on);
-	if (bodyEl) bodyEl.classList.toggle("proxying", on);
+	if (bodyEl) bodyEl.classList.toggle("viewing", on);
 	bar.setAttribute("aria-hidden", on ? "false" : "true");
 	framesEl.setAttribute("aria-hidden", on ? "false" : "true");
 }
@@ -178,7 +168,7 @@ function openTab(url) {
 	iframe.className = "vframe";
 	iframe.setAttribute("allow", "fullscreen; clipboard-read; clipboard-write");
 
-	const sframe = scramjet.createFrame(iframe);
+	const sframe = engine.createFrame(iframe);
 	framesEl.appendChild(iframe);
 
 	const tab = { sframe, url: url || "" };
@@ -237,7 +227,7 @@ form.addEventListener("submit", async (e) => {
 	try {
 		await ensureTransport();
 	} catch (err) {
-		errorEl.textContent = "Couldn't start the proxy.";
+		errorEl.textContent = "Couldn't connect.";
 		errorCode.textContent = err.toString();
 		return;
 	}

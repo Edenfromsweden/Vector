@@ -62,7 +62,7 @@ npm start              # Fastify dev server on http://localhost:8080
 
 Open `http://localhost:8080` in **real Chrome** (not an embedded webview — service
 workers don't register in those), type a URL, hit Enter. In dev, frontend + Wisp run
-together on :8080, so `window.WISP_URL` stays "".
+together on :8080, so `window.EP_URL` stays "".
 
 ## Deploy (Cloudflare Workers)
 
@@ -164,7 +164,7 @@ sites without redeploying:
 | -------- | -------------------------------- | -------------------------------------- |
 | `worker` | `wss://relay.zilkcz.com/`        | no (Worker `connect()` limit)          |
 | `public` | `wss://anura.pro/`               | yes — shared, unreliable, not private  |
-| `mine`   | `wss://wisp2.zilkcz.com/wisp/`   | yes — your own server (set up below)   |
+| `mine`   | `wss://relay2.zilkcz.com/ws/`   | yes — your own server (set up below)   |
 
 Choose with `?backend=<name>` in the URL (remembered in localStorage) or
 `setBackend("<name>")` in the console. Default is `worker`; localhost dev ignores
@@ -210,7 +210,7 @@ is encrypted, and the public URL sits on `zilkcz.com` (as hard to block as the W
    WantedBy=multi-user.target
    ```
 
-   Then `systemctl enable --now wisp`. It now serves Wisp at `ws://localhost:8080/wisp/`.
+   Then `systemctl enable --now wisp`. It now serves Wisp at `ws://localhost:8080/ws/`.
 
 4. **Expose it with a Cloudflare Tunnel** (no port-forwarding, no public port open):
 
@@ -218,27 +218,27 @@ is encrypted, and the public URL sits on `zilkcz.com` (as hard to block as the W
    curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o cf.deb
    dpkg -i cf.deb
    cloudflared tunnel login                 # opens a link; pick the zilkcz.com zone
-   cloudflared tunnel create vector-wisp
-   cloudflared tunnel route dns vector-wisp wisp2.zilkcz.com
+   cloudflared tunnel create vector-relay
+   cloudflared tunnel route dns vector-relay relay2.zilkcz.com
    ```
 
    Create `~/.cloudflared/config.yml`:
 
    ```yaml
-   tunnel: vector-wisp
+   tunnel: vector-relay
    credentials-file: /root/.cloudflared/<tunnel-id>.json
    ingress:
-     - hostname: wisp2.zilkcz.com
+     - hostname: relay2.zilkcz.com
        service: http://localhost:8080
      - service: http_status:404
    ```
 
    Then install it as a service: `cloudflared service install && systemctl enable --now cloudflared`.
 
-5. **Use it.** `endpoint.js` already has `mine: "wss://wisp2.zilkcz.com/wisp/"`.
+5. **Use it.** `endpoint.js` already has `mine: "wss://relay2.zilkcz.com/ws/"`.
    Visit `https://lobster.zilkcz.com/?backend=mine` (or `setBackend("mine")`), then
    load Discord. To make it the default, move `mine` to `DEFAULT` in `endpoint.js`.
-   (Pick a neutral hostname for your droplet too — `wisp2` leaks the tech.)
+   (Keep the hostname boring — a neutral name draws less attention.)
 
 Cost is the droplet only (~$4–6/mo). The tunnel and the `zilkcz.com` hostname are free.
 Datacenter IPs occasionally get challenged by Discord; if a site refuses the connection
@@ -247,8 +247,8 @@ that's an IP-reputation issue, not a bug.
 ## File map (what was added on top of the template)
 
 - `public/endpoint.js` — picks the Wisp backend (worker/public/mine) and sets
-  `window.WISP_URL` (empty = same-origin dev).
-- `public/index.js` — patched to honor `window.WISP_URL`.
+  `window.EP_URL` (empty = same-origin dev).
+- `public/index.js` — patched to honor `window.EP_URL`.
 - `public/index.html` — loads `endpoint.js` before `index.js`.
 - `scripts/build-svg-shell.mjs` — generates `app/` (the deployed frontend) from `public/`.
 - `wrangler.jsonc` — root config for the `vector` frontend Worker (serves `app/`).

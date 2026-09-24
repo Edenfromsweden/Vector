@@ -26,17 +26,13 @@ const scramjet = new ScramjetController({
 		all: "/scram/scramjet.all.js",
 		sync: "/scram/scramjet.sync.js",
 	},
-	// Sites like Discord register their own service worker inside the frame;
-	// this enables Scramjet's nested-service-worker support.
+	// Some pages register their own service worker inside the frame; this
+	// enables nested-service-worker support.
 	flags: {
 		serviceworkers: true,
 	},
-	// Obfuscate the proxied URL. The default codec is encodeURIComponent, which
-	// leaves the target host readable in the path (/scram/https://discord.com/…),
-	// so a URL-filtering extension matches it and shows its block page. base64url
-	// makes the path an opaque blob with no hostname in it. These functions are
-	// serialized and re-run inside the service worker, so they must be
-	// self-contained (no references to anything outside).
+	// Encode the path segment as base64url. Serialized and re-run inside the
+	// service worker, so these must be self-contained.
 	codec: {
 		encode: (str) => {
 			if (!str) return str;
@@ -63,15 +59,15 @@ let transportReady = false;
 async function ensureTransport() {
 	await registerSW();
 	if (transportReady) return;
-	const wispUrl =
-		window.WISP_URL ||
+	const epUrl =
+		window.EP_URL ||
 		(location.protocol === "https:" ? "wss" : "ws") +
 			"://" +
 			location.host +
-			"/wisp/";
+			"/ws/";
 	if ((await connection.getTransport()) !== "/libcurl/index.mjs") {
 		await connection.setTransport("/libcurl/index.mjs", [
-			{ websocket: wispUrl },
+			{ websocket: epUrl },
 		]);
 	}
 	transportReady = true;
@@ -84,7 +80,7 @@ let active = null;
 function setChrome(on) {
 	bar.classList.toggle("show", on);
 	framesEl.classList.toggle("show", on);
-	document.body.classList.toggle("proxying", on);
+	document.body.classList.toggle("viewing", on);
 	bar.setAttribute("aria-hidden", on ? "false" : "true");
 	framesEl.setAttribute("aria-hidden", on ? "false" : "true");
 }
@@ -200,7 +196,7 @@ form.addEventListener("submit", async (e) => {
 	try {
 		await ensureTransport();
 	} catch (err) {
-		errorEl.textContent = "Couldn't start the proxy.";
+		errorEl.textContent = "Couldn't connect.";
 		errorCode.textContent = err.toString();
 		return;
 	}

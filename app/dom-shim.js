@@ -9,8 +9,8 @@
  * This file does two jobs:
  *   1. exposes `window.xel(tag)`, which every script here uses instead of
  *      document.createElement, so our own code never depends on the patch below;
- *   2. patches `document` so third-party code (Scramjet, bare-mux) that calls
- *      document.createElement / getElementById internally also behaves.
+ *   2. patches `document` so third-party libraries that call
+ *      document.createElement / getElementById internally also behave.
  *
  * It is a separate file rather than an inline <script> on purpose: a page-level
  * Content-Security-Policy blocks inline script first, and losing this patch
