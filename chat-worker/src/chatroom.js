@@ -59,6 +59,7 @@ export class ChatRoom {
 					text: `${session.name} joined`,
 					ts: Date.now(),
 				});
+				this.broadcastRoster();
 				return;
 			}
 
@@ -84,6 +85,7 @@ export class ChatRoom {
 					text: `${session.name} left`,
 					ts: Date.now(),
 				});
+				this.broadcastRoster();
 			}
 		};
 		ws.addEventListener("close", close);
@@ -99,6 +101,20 @@ export class ChatRoom {
 				this.sessions.delete(sess);
 			}
 		}
+	}
+
+	// The list of names currently in the room (deduped), for the who's-online UI.
+	broadcastRoster() {
+		const seen = new Set();
+		const users = [];
+		for (const sess of this.sessions) {
+			const n = sess.name || "anon";
+			if (!seen.has(n)) {
+				seen.add(n);
+				users.push(n);
+			}
+		}
+		this.broadcast({ type: "roster", users });
 	}
 }
 
