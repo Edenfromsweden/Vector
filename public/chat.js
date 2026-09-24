@@ -15,10 +15,12 @@
 		window.xel ||
 		((t) => document.createElementNS("http://www.w3.org/1999/xhtml", t));
 
-	const CHAT_URL = (window.CHAT_URL || "wss://chat.zilkcz.com/").replace(
+	// HTTPS base of your deployed chat-worker (see chat-worker/README).
+	const CHAT_URL = (window.CHAT_URL || "https://chat.zilkcz.com/").replace(
 		/\/*$/,
 		"/"
 	);
+	const POLL_MS = 2000;
 	const NAME_KEY = "vector_chat_name";
 	const AUTH_KEY = "vector_chat_auth";
 	const MUTE_KEY = "vector_chat_muted";
@@ -51,9 +53,10 @@
 	const input = document.getElementById("chat-input");
 	const leaveBtn = document.getElementById("chat-leave");
 
-	let ws = null;
 	let room = null;
-	let wantOpen = false;
+	let since = 0;
+	let polling = false;
+	let pollTimer = null;
 
 	function loadMuted() {
 		try {
@@ -211,52 +214,38 @@
 
 	function connect(target) {
 		room = target;
-		wantOpen = true;
+		since = 0;
+		polling = true;
 		show("room");
 		roomNameEl.textContent = target === "public" ? "Public lobby" : `#${target}`;
 		logEl.textContent = "";
 		if (rosterEl) rosterEl.textContent = "";
-		open();
+		setStatus("connecting…");
+		getName(); // persist name
+		poll();
+		if (input) input.focus();
 	}
 
-	function open() {
-		if (!wantOpen) return;
-		setStatus("connecting…");
+	async function poll() {
+		if (!polling) return;
 		try {
-			ws = new WebSocket(CHAT_URL + "room/" + encodeURIComponent(room));
-		} catch {
-			setStatus("bad chat URL");
-			return;
-		}
-		const name = getName();
-		ws.addEventListener("open", () => {
+			const res = await fetch(CHAT_URL + "api/poll", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ room, name: getName(), since }),
+			});
+			if (!res.ok) throw new Error("http " + res.status);
+			const d = await res.json();
 			setStatus("connected");
-			ws.send(JSON.stringify({ type: "join", name }));
-			if (input) input.focus();
-		});
-		ws.addEventListener("message", (ev) => {
-			let d;
-			try {
-				d = JSON.parse(ev.data);
-			} catch {
-				return;
-			}
-			if (d.type === "history" && Array.isArray(d.messages)) {
+			if (Array.isArray(d.messages)) {
 				for (const m of d.messages) addLine("msg", m.name, m.text, m.ts);
-			} else if (d.type === "msg") {
-				addLine("msg", d.name, d.text, d.ts);
-			} else if (d.type === "system") {
-				addLine("system", null, d.text, d.ts);
-			} else if (d.type === "roster" && Array.isArray(d.users)) {
-				renderRoster(d.users);
 			}
-		});
-		ws.addEventListener("close", () => {
-			if (!wantOpen) return;
-			setStatus("reconnecting…");
-			setTimeout(open, 1500);
-		});
-		ws.addEventListener("error", () => setStatus("connection error"));
+			if (typeof d.last === "number" && d.last > since) since = d.last;
+			if (Array.isArray(d.roster)) renderRoster(d.roster);
+		} catch {
+			setStatus("offline — retrying…");
+		}
+		if (polling) pollTimer = setTimeout(poll, POLL_MS);
 	}
 
 	function setStatus(s) {
@@ -264,14 +253,10 @@
 	}
 
 	function disconnect() {
-		wantOpen = false;
-		if (ws) {
-			try {
-				ws.close();
-			} catch {
-				/* ignore */
-			}
-			ws = null;
+		polling = false;
+		if (pollTimer) {
+			clearTimeout(pollTimer);
+			pollTimer = null;
 		}
 	}
 
@@ -318,12 +303,23 @@
 	if (leaveBtn) leaveBtn.addEventListener("click", leave);
 
 	if (form)
-		form.addEventListener("submit", (e) => {
+		form.addEventListener("submit", async (e) => {
 			e.preventDefault();
 			const text = (input.value || "").trim();
-			if (!text || !ws || ws.readyState !== 1) return;
-			ws.send(JSON.stringify({ type: "msg", text }));
+			if (!text || !polling) return;
 			input.value = "";
+			try {
+				await fetch(CHAT_URL + "api/send", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ room, name: getName(), text }),
+				});
+			} catch {
+				setStatus("offline — message not sent");
+			}
+			// pull it (and anyone else's) back promptly instead of waiting a tick
+			if (pollTimer) clearTimeout(pollTimer);
+			poll();
 		});
 
 	function openPanel() {

@@ -1,26 +1,21 @@
-# Vector chat backend. A Worker with a Durable Object per room.
+# Vector chat backend (free tier). A Worker backed by a D1 database — no Durable
+# Objects, so it runs on the free Workers plan.
 #
-# Deploy:
-#   cd chat-worker
-#   npx wrangler deploy
-#
-# Durable Objects require a Cloudflare paid (Workers Paid) plan. After deploy the
-# Worker is reachable at https://vector-chat.<your-subdomain>.workers.dev/ — or
-# put it on a custom domain (see the routes block below) and point chat.js at it.
+# Setup (all in the browser — see chat-worker/README.md):
+#   1. Cloudflare dashboard -> Storage & Databases -> D1 -> create a database
+#      named "vector-chat", and copy its Database ID.
+#   2. Paste that ID into database_id below.
+#   3. Deploy this folder as a Worker (connect the repo, root dir chat-worker).
 
 name = "vector-chat"
 main = "src/index.js"
 compatibility_date = "2025-01-01"
 
-[[durable_objects.bindings]]
-name = "CHAT_ROOM"
-class_name = "ChatRoom"
+[[d1_databases]]
+binding = "DB"
+database_name = "vector-chat"
+database_id = "PASTE_YOUR_D1_DATABASE_ID_HERE"
 
-[[migrations]]
-tag = "v1"
-new_classes = ["ChatRoom"]
-
-# Optional: expose it on a neutral custom domain on your zone (like the proxy
-# backend does), so it's as hard to block as the rest of the site. Uncomment and
-# set your own hostname, then re-deploy:
+# Optional: put it on a neutral custom domain on your zone, then use that as
+# CHAT_URL, so it's as hard to block as the rest of the site:
 # routes = [{ pattern = "chat.zilkcz.com", custom_domain = true }]
