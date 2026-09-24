@@ -16,7 +16,7 @@
 		((t) => document.createElementNS("http://www.w3.org/1999/xhtml", t));
 
 	// HTTPS base of your deployed chat-worker (see chat-worker/README).
-	const CHAT_URL = (window.CHAT_URL || "https://chat.zilkcz.com/").replace(
+	const CHAT_URL = (window.CHAT_URL || "https://vectorbcknd.zilkcz.com/").replace(
 		/\/*$/,
 		"/"
 	);
