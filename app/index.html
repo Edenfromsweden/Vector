@@ -248,7 +248,23 @@
 				<button class="vbtn" id="chat-close" title="Close">&times;</button>
 			</div>
 			<div class="chat-body">
-				<div id="chat-setup" class="chat-setup">
+				<div id="chat-login" class="chat-setup" hidden>
+					<label class="chat-field">
+						<span>Password</span>
+						<input
+							id="chat-pass"
+							type="password"
+							placeholder="enter password"
+							autocomplete="off"
+						/>
+					</label>
+					<button type="button" id="chat-login-btn" class="chat-btn">
+						Log in
+					</button>
+					<p id="chat-login-err" class="chat-error"></p>
+				</div>
+
+				<div id="chat-setup" class="chat-setup" hidden>
 					<label class="chat-field">
 						<span>Username</span>
 						<input
@@ -294,6 +310,7 @@
 						<span id="chat-room-name" class="chat-room-name"></span>
 						<span id="chat-status" class="chat-status"></span>
 					</div>
+					<div id="chat-roster" class="chat-roster"></div>
 					<div id="chat-log" class="chat-log"></div>
 					<form id="chat-form" class="chat-composer">
 						<input
