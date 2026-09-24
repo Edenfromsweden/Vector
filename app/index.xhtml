@@ -171,6 +171,19 @@
 					</svg>
 					Settings
 				</button>
+
+				<button type="button" id="open-chat" class="games-btn">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+						<path
+							d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 1-1.5 1.5H9l-4 3.5V16H4A1.5 1.5 0 0 1 2.5 14.5V7A1.5 1.5 0 0 1 4 5.5Z"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.8"
+							stroke-linejoin="round"
+						/>
+					</svg>
+					Chat
+				</button>
 			</div>
 
 			<div class="status">
@@ -225,6 +238,74 @@
 					<h3 class="settings-label">Theme</h3>
 					<div id="theme-grid" class="theme-grid"></div>
 				</section>
+			</div>
+		</div>
+
+		<!-- Chat panel -->
+		<div id="chat" class="panel" aria-hidden="true">
+			<div class="panel-head">
+				<h2>Chat</h2>
+				<button class="vbtn" id="chat-close" title="Close">&#215;</button>
+			</div>
+			<div class="chat-body">
+				<div id="chat-setup" class="chat-setup">
+					<label class="chat-field">
+						<span>Username</span>
+						<input
+							id="chat-name"
+							type="text"
+							maxlength="24"
+							placeholder="pick a name"
+							autocomplete="off"
+							autocapitalize="off"
+							spellcheck="false"
+						/>
+					</label>
+					<div class="chat-rooms">
+						<button type="button" id="chat-join-public" class="chat-btn">
+							Join public lobby
+						</button>
+						<div class="chat-code-row">
+							<input
+								id="chat-code"
+								type="text"
+								maxlength="32"
+								placeholder="private room code"
+								autocomplete="off"
+								autocapitalize="off"
+								spellcheck="false"
+							/>
+							<button type="button" id="chat-join-code" class="chat-btn">
+								Join
+							</button>
+						</div>
+					</div>
+					<p class="chat-note">
+						Anyone can pick any name and rooms aren't moderated — share private
+						room codes only with people you trust.
+					</p>
+				</div>
+
+				<div id="chat-room" class="chat-conv" hidden="hidden">
+					<div class="chat-conv-head">
+						<button type="button" id="chat-leave" class="chat-btn small">
+							&#8249; Rooms
+						</button>
+						<span id="chat-room-name" class="chat-room-name"></span>
+						<span id="chat-status" class="chat-status"></span>
+					</div>
+					<div id="chat-log" class="chat-log"></div>
+					<form id="chat-form" class="chat-composer">
+						<input
+							id="chat-input"
+							type="text"
+							maxlength="500"
+							placeholder="Message…"
+							autocomplete="off"
+						/>
+						<button type="submit" class="chat-btn">Send</button>
+					</form>
+				</div>
 			</div>
 		</div>
 
@@ -309,6 +390,7 @@
 		<script src="app.js" onerror="__vnote('app.js')"></script>
 		<script src="bg.js" onerror="__vnote('bg.js')"></script>
 		<script src="settings.js" onerror="__vnote('settings.js')"></script>
+		<script src="chat.js" onerror="__vnote('chat.js')"></script>
 		<script src="preload.js" onerror="__vnote('preload.js')"></script>
 		<script src="games.js" onerror="__vnote('games.js')"></script>
 		<script>/*<![CDATA[*/
