@@ -16,6 +16,7 @@ binding = "DB"
 database_name = "vector-chat"
 database_id = "PASTE_YOUR_D1_DATABASE_ID_HERE"
 
-# Optional: put it on a neutral custom domain on your zone, then use that as
-# CHAT_URL, so it's as hard to block as the rest of the site:
-# routes = [{ pattern = "chat.zilkcz.com", custom_domain = true }]
+# Serve the Worker at a custom domain on your zilkcz.com zone. custom_domain =
+# true makes Cloudflare create the DNS record + TLS cert automatically on deploy,
+# so vectorbcknd.zilkcz.com starts resolving after the next build.
+routes = [{ pattern = "vectorbcknd.zilkcz.com", custom_domain = true }]
