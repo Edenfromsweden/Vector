@@ -1,0 +1,22 @@
+# Vector AI backend. A Worker that runs Cloudflare Workers AI (free daily quota,
+# no API key) and tracks a per-user daily token cap in D1.
+#
+# Setup (browser, see ai-worker/README.md):
+#   1. Create a D1 database named "vector-ai" and paste its ID below.
+#   2. Deploy this folder as a Worker (root directory: ai-worker).
+# The [ai] binding needs no key; Workers AI is free up to a daily allowance.
+
+name = "vector-ai"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "USAGE"
+database_name = "vector-ai"
+database_id = "PASTE_YOUR_D1_DATABASE_ID_HERE"
+
+# Optional custom domain on your zone, used as AI_URL:
+# routes = [{ pattern = "vectorai.zilkcz.com", custom_domain = true }]

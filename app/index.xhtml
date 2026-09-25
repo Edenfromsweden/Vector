@@ -171,6 +171,21 @@
 					</svg>
 					Settings
 				</button>
+
+				<button type="button" id="open-ai" class="games-btn">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+						<path
+							d="M12 3.5l1.7 4.3 4.3 1.7-4.3 1.7L12 15.5l-1.7-4.3L6 9.5l4.3-1.7L12 3.5Z"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.6"
+							stroke-linejoin="round"
+						/>
+						<circle cx="18" cy="17" r="1" fill="currentColor" />
+						<circle cx="6.5" cy="17.5" r="0.8" fill="currentColor" />
+					</svg>
+					AI
+				</button>
 			</div>
 
 			<div class="status">
@@ -212,6 +227,28 @@
 			<p id="games-empty" class="games-empty" hidden="hidden">
 				No games found.
 			</p>
+		</div>
+
+		<!-- AI assistant panel -->
+		<div id="ai" class="panel" aria-hidden="true">
+			<div class="panel-head">
+				<h2>AI</h2>
+				<button class="vbtn" id="ai-clear" title="New chat">New</button>
+				<button class="vbtn" id="ai-close" title="Close">&#215;</button>
+			</div>
+			<div class="ai-body">
+				<div id="ai-log" class="ai-log"></div>
+				<form id="ai-form" class="ai-composer">
+					<input
+						id="ai-input"
+						type="text"
+						maxlength="4000"
+						placeholder="Ask the AI…"
+						autocomplete="off"
+					/>
+					<button type="submit" class="chat-send">Send</button>
+				</form>
+			</div>
 		</div>
 
 		<!-- Settings panel -->
@@ -309,6 +346,7 @@
 		<script src="app.js" onerror="__vnote('app.js')"></script>
 		<script src="bg.js" onerror="__vnote('bg.js')"></script>
 		<script src="settings.js" onerror="__vnote('settings.js')"></script>
+		<script src="ai.js" onerror="__vnote('ai.js')"></script>
 		<script src="preload.js" onerror="__vnote('preload.js')"></script>
 		<script src="games.js" onerror="__vnote('games.js')"></script>
 		<script>/*<![CDATA[*/

@@ -1468,3 +1468,121 @@ body.viewing #bg {
 .pl-fill {
 	box-shadow: 0 0 10px rgba(var(--aur-2), 0.6);
 }
+
+/* ---- AI assistant panel ---- */
+.ai-body {
+	width: 100%;
+	max-width: 720px;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+.ai-log {
+	flex: 1;
+	min-height: 260px;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 16px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 14px;
+}
+
+.ai-line {
+	max-width: 85%;
+	padding: 10px 14px;
+	border-radius: 14px;
+	font-size: 14px;
+	line-height: 1.5;
+	word-break: break-word;
+	white-space: pre-wrap;
+}
+.ai-line.user {
+	align-self: flex-end;
+	color: #fff;
+	background: linear-gradient(
+		120deg,
+		var(--violet-soft),
+		var(--cornflower-soft)
+	);
+}
+.ai-line.bot {
+	align-self: flex-start;
+	background: var(--surface-2);
+	border: 1px solid var(--border);
+	color: var(--text);
+}
+.ai-line.sys {
+	align-self: center;
+	background: none;
+	color: var(--muted);
+	font-size: 12px;
+	font-style: italic;
+	padding: 4px 8px;
+}
+.ai-line.pending .ai-text {
+	opacity: 0.6;
+}
+.ai-who {
+	display: block;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--cornflower-soft);
+	margin-bottom: 3px;
+}
+
+.ai-composer {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}
+.ai-composer input {
+	flex: 1;
+	min-width: 0;
+	height: 46px;
+	padding: 0 16px;
+	font: inherit;
+	font-size: 15px;
+	color: var(--text);
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 12px;
+	outline: none;
+	transition:
+		border-color 0.15s ease,
+		background 0.15s ease;
+}
+.ai-composer input:focus {
+	border-color: var(--border-focus);
+	background: var(--surface-2);
+}
+.chat-send {
+	flex: none;
+	font: inherit;
+	font-size: 14px;
+	color: #fff;
+	background: linear-gradient(
+		120deg,
+		var(--violet-soft),
+		var(--cornflower-soft)
+	);
+	border: 0;
+	padding: 0 20px;
+	height: 46px;
+	border-radius: 12px;
+	cursor: pointer;
+	transition:
+		filter 0.15s ease,
+		transform 0.1s ease;
+}
+.chat-send:hover {
+	filter: brightness(1.08) drop-shadow(0 0 14px rgba(var(--aur-2), 0.5));
+}
+.chat-send:active {
+	transform: scale(0.98);
+}
